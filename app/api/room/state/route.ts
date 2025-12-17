@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { rooms } from '../create/route';
+import { rooms } from '@/lib/roomStorage';
 
 export async function GET(request: NextRequest) {
   try {

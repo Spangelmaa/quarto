@@ -1,19 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createInitialGameState } from '@/utils/gameLogic';
 import { Room } from '@/types/multiplayer';
-
-// In-Memory Storage für Demo (in Produktion würde man Redis/Database verwenden)
-const rooms = new Map<string, Room>();
-
-// Cleanup alte Räume (älter als 24 Stunden)
-setInterval(() => {
-  const now = Date.now();
-  rooms.forEach((room, id) => {
-    if (now - room.createdAt > 24 * 60 * 60 * 1000) {
-      rooms.delete(id);
-    }
-  });
-}, 60 * 60 * 1000); // Jede Stunde prüfen
+import { rooms } from '@/lib/roomStorage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -43,6 +31,3 @@ export async function POST(request: NextRequest) {
     return NextResponse.json({ error: 'Fehler beim Erstellen des Raums' }, { status: 500 });
   }
 }
-
-export { rooms };
-

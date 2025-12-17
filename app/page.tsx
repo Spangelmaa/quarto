@@ -165,7 +165,7 @@ export default function Home() {
 
   // Bestimme ob Spieler an der Reihe ist (für Online-Modus)
   const isMyTurn = gameMode === 'local' || 
-    (playerInfo && gameState.currentPlayer === playerInfo.playerNumber);
+    (playerInfo !== null && gameState.currentPlayer === playerInfo.playerNumber);
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
