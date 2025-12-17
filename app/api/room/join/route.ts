@@ -5,10 +5,14 @@ export async function POST(request: NextRequest) {
   try {
     const { roomId, playerId } = await request.json();
     
-    console.log(`[JOIN] Versuche Raum beizutreten: ${roomId}`);
-    console.log(`[JOIN] Verfügbare Räume:`, Array.from(rooms.keys()));
+    const upperRoomId = roomId.toUpperCase();
     
-    const room = rooms.get(roomId.toUpperCase());
+    console.log(`[JOIN] Versuche Raum beizutreten: ${roomId} -> ${upperRoomId}`);
+    console.log(`[JOIN] rooms Map Reference:`, rooms);
+    console.log(`[JOIN] Verfügbare Räume:`, Array.from(rooms.keys()));
+    console.log(`[JOIN] Suche nach Key:`, upperRoomId);
+    
+    const room = rooms.get(upperRoomId);
     
     if (!room) {
       console.log(`[JOIN] Raum nicht gefunden: ${roomId}`);

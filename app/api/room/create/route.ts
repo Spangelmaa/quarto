@@ -23,7 +23,9 @@ export async function POST(request: NextRequest) {
     rooms.set(roomId, room);
     
     console.log(`[CREATE] Raum erstellt: ${roomId}, Spieler1: ${playerId}`);
+    console.log(`[CREATE] rooms Map Reference:`, rooms);
     console.log(`[CREATE] Gespeicherte Räume:`, Array.from(rooms.keys()));
+    console.log(`[CREATE] Raum gespeichert unter Key:`, roomId, 'Wert:', rooms.get(roomId) ? 'VORHANDEN' : 'FEHLT');
     
     return NextResponse.json({ 
       roomId, 
