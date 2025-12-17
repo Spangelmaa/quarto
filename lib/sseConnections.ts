@@ -43,13 +43,22 @@ export function broadcastRoomUpdate(roomId: string, data: any) {
     try {
       controller.enqueue(message);
     } catch (e) {
-      console.error('[SSE] Fehler beim Senden:', e);
+      console.error('[SSE] ❌ Fehler beim Senden, markiere Verbindung als tot:', e);
       deadConnections.push(controller);
     }
   });
   
   // Entferne tote Verbindungen
-  deadConnections.forEach(controller => {
-    roomConnections.delete(controller);
-  });
+  if (deadConnections.length > 0) {
+    console.log(`[SSE] 🧹 Entferne ${deadConnections.length} tote Verbindung(en) für Raum ${upperRoomId}`);
+    deadConnections.forEach(controller => {
+      roomConnections.delete(controller);
+    });
+    
+    // Wenn keine Verbindungen mehr übrig sind, entferne den Raum aus der Map
+    if (roomConnections.size === 0) {
+      connections.delete(upperRoomId);
+      console.log(`[SSE] 🧹 Raum ${upperRoomId} hat keine Verbindungen mehr, entfernt`);
+    }
+  }
 }

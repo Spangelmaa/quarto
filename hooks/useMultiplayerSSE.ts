@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { GameState } from '@/types/game';
 import { PlayerInfo } from '@/types/multiplayer';
+import { CONNECTION_CONFIG } from '@/config/connection';
 
 type ConnectionStatus = 'disconnected' | 'connecting' | 'connected' | 'error';
 
@@ -19,6 +20,7 @@ export const useMultiplayerSSE = () => {
   const lastUpdateTimeRef = useRef(0);
   const fallbackPollingRef = useRef<NodeJS.Timeout | null>(null);
   const lastSSEMessageRef = useRef<number>(Date.now());
+  const visibilityCheckRef = useRef<NodeJS.Timeout | null>(null);
 
   // Generiere eindeutige Player ID
   const getPlayerId = useCallback(() => {
@@ -58,9 +60,9 @@ export const useMultiplayerSSE = () => {
       fallbackPollingRef.current = setInterval(async () => {
         const timeSinceLastMessage = Date.now() - lastSSEMessageRef.current;
         
-        // Wenn länger als 12 Sekunden keine SSE-Nachricht, hole State manuell
-        if (timeSinceLastMessage > 12000) {
-          console.log('[FALLBACK] ⚠️ Keine SSE-Nachricht seit 12s, hole State manuell');
+        // Wenn länger als konfiguriert keine SSE-Nachricht, hole State manuell
+        if (timeSinceLastMessage > CONNECTION_CONFIG.FALLBACK_TIMEOUT) {
+          console.log(`[FALLBACK] ⚠️ Keine SSE-Nachricht seit ${CONNECTION_CONFIG.FALLBACK_TIMEOUT}ms, hole State manuell`);
           try {
             const response = await fetch(`/api/room/state?roomId=${roomId}`);
             if (response.ok) {
@@ -82,12 +84,17 @@ export const useMultiplayerSSE = () => {
             console.error('[FALLBACK] ❌ Fehler beim manuellen Abrufen:', e);
           }
         }
-      }, 2000); // Prüfe sehr häufig (alle 2 Sekunden)
+      }, CONNECTION_CONFIG.FALLBACK_POLL_INTERVAL);
     };
 
     eventSource.onmessage = (event) => {
       try {
         lastSSEMessageRef.current = Date.now(); // Aktualisiere letzte Nachricht
+        
+        // Ignoriere leere Events (Heartbeats werden über Kommentare gesendet)
+        if (!event.data || event.data.trim() === '') {
+          return;
+        }
         
         const data = JSON.parse(event.data);
         
@@ -106,6 +113,9 @@ export const useMultiplayerSSE = () => {
           
           // Lösche pending state wenn erfolgreich synchronisiert
           pendingStateRef.current = null;
+        } else if (data.type === 'ping') {
+          // Heartbeat erhalten, keine Aktion nötig (lastSSEMessageRef wurde schon aktualisiert)
+          console.log('[SSE] 💓 Ping erhalten');
         }
       } catch (e) {
         console.error('[SSE] Fehler beim Parsen:', e);
@@ -123,10 +133,12 @@ export const useMultiplayerSSE = () => {
         // Zeige weiter "connected" solange Fallback funktioniert
         
         // Automatischer Reconnect mit exponential backoff
-        const maxAttempts = 50; // Sehr viele Versuche
-        if (reconnectAttemptsRef.current < maxAttempts) {
-          const delay = Math.min(500 * Math.pow(1.5, reconnectAttemptsRef.current), 3000); // Max 3s, schnellerer Start
-          console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${maxAttempts})`);
+        if (reconnectAttemptsRef.current < CONNECTION_CONFIG.MAX_RECONNECT_ATTEMPTS) {
+          const delay = Math.min(
+            CONNECTION_CONFIG.INITIAL_RECONNECT_DELAY * Math.pow(CONNECTION_CONFIG.BACKOFF_FACTOR, reconnectAttemptsRef.current),
+            CONNECTION_CONFIG.MAX_RECONNECT_DELAY
+          );
+          console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${CONNECTION_CONFIG.MAX_RECONNECT_ATTEMPTS})`);
           
           // Zeige Fehler erst nach vielen Versuchen (Fallback läuft ja)
           if (reconnectAttemptsRef.current > 5) {
@@ -235,10 +247,10 @@ export const useMultiplayerSSE = () => {
       return false;
     }
 
-    // Debouncing: Mindestens 100ms zwischen Updates
+    // Debouncing: Mindestens konfigurierte Zeit zwischen Updates
     const now = Date.now();
     const timeSinceLastUpdate = now - lastUpdateTimeRef.current;
-    if (timeSinceLastUpdate < 100) {
+    if (timeSinceLastUpdate < CONNECTION_CONFIG.MIN_UPDATE_INTERVAL) {
       console.log('[UPDATE] ⏭️ Zu früh für Update, warte');
       return false;
     }
@@ -354,6 +366,45 @@ export const useMultiplayerSSE = () => {
     }
   }, [connectSSE]);
 
+  // Überwache Sichtbarkeit des Tabs und Netzwerkstatus
+  useEffect(() => {
+    const handleVisibilityChange = () => {
+      if (document.visibilityState === 'visible' && playerInfo) {
+        console.log('[VISIBILITY] Tab wieder sichtbar, prüfe Verbindung');
+        
+        // Prüfe ob SSE noch lebt
+        const timeSinceLastMessage = Date.now() - lastSSEMessageRef.current;
+        if (timeSinceLastMessage > CONNECTION_CONFIG.VISIBILITY_RECONNECT_THRESHOLD || eventSourceRef.current?.readyState === EventSource.CLOSED) {
+          console.log('[VISIBILITY] SSE scheint tot, starte Reconnect');
+          connectSSE(playerInfo.roomId);
+        }
+      }
+    };
+
+    const handleOnline = () => {
+      if (playerInfo) {
+        console.log('[NETWORK] Wieder online, reconnecte SSE');
+        connectSSE(playerInfo.roomId);
+      }
+    };
+
+    const handleOffline = () => {
+      console.log('[NETWORK] Offline erkannt');
+      setConnectionStatus('error');
+      setError('Keine Internetverbindung');
+    };
+
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+    window.addEventListener('online', handleOnline);
+    window.addEventListener('offline', handleOffline);
+
+    return () => {
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+      window.removeEventListener('online', handleOnline);
+      window.removeEventListener('offline', handleOffline);
+    };
+  }, [playerInfo, connectSSE]);
+
   // Cleanup beim Unmount
   useEffect(() => {
     return () => {
@@ -365,6 +416,9 @@ export const useMultiplayerSSE = () => {
       }
       if (fallbackPollingRef.current) {
         clearInterval(fallbackPollingRef.current);
+      }
+      if (visibilityCheckRef.current) {
+        clearTimeout(visibilityCheckRef.current);
       }
     };
   }, []);

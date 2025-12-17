@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { roomStorage } from '@/lib/roomStorage';
 import { addConnection, removeConnection } from '@/lib/sseConnections';
+import { CONNECTION_CONFIG } from '@/config/connection';
 
 // WICHTIG: Node.js Runtime für SSE erforderlich (nicht Edge)
 export const runtime = 'nodejs';
@@ -42,7 +43,7 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${data}\n\n`));
       }
       
-      // Heartbeat alle 5 Sekunden (aggressiv gegen Vercel Timeouts)
+      // Heartbeat (konfigurierbar über CONNECTION_CONFIG)
       const heartbeatInterval = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': heartbeat\n\n'));
@@ -52,7 +53,7 @@ export async function GET(request: NextRequest) {
           clearInterval(heartbeatInterval);
           removeConnection(upperRoomId, controller);
         }
-      }, 5000); // 5 Sekunden - sehr aggressiv gegen Timeouts
+      }, CONNECTION_CONFIG.HEARTBEAT_INTERVAL);
       
       // Cleanup bei Verbindungsabbruch
       request.signal.addEventListener('abort', () => {
@@ -70,6 +71,8 @@ export async function GET(request: NextRequest) {
       'Connection': 'keep-alive',
       'X-Accel-Buffering': 'no',
       'Keep-Alive': 'timeout=300, max=1000', // Lange Timeouts für Inaktivität
+      // Verhindere Buffering durch Proxies/Load Balancer
+      'X-Content-Type-Options': 'nosniff',
     },
   });
 }
