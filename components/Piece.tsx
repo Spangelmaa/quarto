@@ -30,7 +30,7 @@ export const Piece: React.FC<PieceProps> = ({ piece, onClick, size = 'medium', s
         className={`w-full ${heightClasses} ${colorClasses} ${shapeClasses} border-2 sm:border-4 flex items-center justify-center transition-transform`}
       >
         {top === 'hollow' && (
-          <div className={`w-3 h-3 sm:w-4 sm:h-4 ${color === 'light' ? 'bg-amber-300' : 'bg-gray-900'} ${shape === 'round' ? 'rounded-full' : 'rounded-sm'}`} />
+          <div className={`w-3 h-3 sm:w-4 sm:h-4 ${color === 'light' ? 'bg-white' : 'bg-gray-900'} ${shape === 'round' ? 'rounded-full' : 'rounded-sm'}`} />
         )}
       </div>
     </div>
