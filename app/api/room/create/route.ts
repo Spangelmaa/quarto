@@ -22,12 +22,16 @@ export async function POST(request: NextRequest) {
     
     rooms.set(roomId, room);
     
+    console.log(`[CREATE] Raum erstellt: ${roomId}, Spieler1: ${playerId}`);
+    console.log(`[CREATE] Gespeicherte Räume:`, Array.from(rooms.keys()));
+    
     return NextResponse.json({ 
       roomId, 
       playerNumber: 1,
       gameState: room.gameState 
     });
   } catch (error) {
+    console.error('[CREATE] Fehler:', error);
     return NextResponse.json({ error: 'Fehler beim Erstellen des Raums' }, { status: 500 });
   }
 }

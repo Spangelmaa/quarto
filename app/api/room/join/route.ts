@@ -5,18 +5,25 @@ export async function POST(request: NextRequest) {
   try {
     const { roomId, playerId } = await request.json();
     
+    console.log(`[JOIN] Versuche Raum beizutreten: ${roomId}`);
+    console.log(`[JOIN] Verfügbare Räume:`, Array.from(rooms.keys()));
+    
     const room = rooms.get(roomId.toUpperCase());
     
     if (!room) {
+      console.log(`[JOIN] Raum nicht gefunden: ${roomId}`);
       return NextResponse.json({ error: 'Raum nicht gefunden' }, { status: 404 });
     }
     
     if (room.players.player2) {
+      console.log(`[JOIN] Raum ist voll: ${roomId}`);
       return NextResponse.json({ error: 'Raum ist voll' }, { status: 400 });
     }
     
     room.players.player2 = playerId;
     rooms.set(roomId.toUpperCase(), room);
+    
+    console.log(`[JOIN] Spieler 2 beigetreten: ${playerId} in Raum ${roomId}`);
     
     return NextResponse.json({ 
       roomId: room.id, 
@@ -24,6 +31,7 @@ export async function POST(request: NextRequest) {
       gameState: room.gameState 
     });
   } catch (error) {
+    console.error('[JOIN] Fehler:', error);
     return NextResponse.json({ error: 'Fehler beim Beitreten' }, { status: 500 });
   }
 }

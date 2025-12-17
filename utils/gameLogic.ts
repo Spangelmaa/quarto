@@ -103,7 +103,8 @@ export const placePiece = (
     board: newBoard,
     selectedPiece: null,
     winner: hasWinner ? gameState.currentPlayer : (isDraw ? 0 : null),
-    currentPlayer: gameState.currentPlayer === 1 ? 2 : 1,
+    // Spieler bleibt gleich - er wählt jetzt einen Stein für den Gegner
+    currentPlayer: gameState.currentPlayer,
     gamePhase: (hasWinner || isDraw) ? 'placePiece' : 'selectPiece',
     availablePieces: newAvailablePieces
   };
@@ -115,10 +116,14 @@ export const selectPiece = (gameState: GameState, piece: Piece): GameState | nul
     return null;
   }
   
+  // Der Spieler wählt den Stein für den Gegner aus
+  // Der Spielerwechsel passiert NACH dem Auswählen
+  const nextPlayer = gameState.currentPlayer === 1 ? 2 : 1;
+  
   return {
     ...gameState,
     selectedPiece: piece,
     gamePhase: 'placePiece',
-    currentPlayer: gameState.currentPlayer === 1 ? 2 : 1
+    currentPlayer: nextPlayer // Jetzt ist der andere Spieler dran zum Platzieren
   };
 };
