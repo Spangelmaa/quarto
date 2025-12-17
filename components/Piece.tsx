@@ -20,12 +20,12 @@ export const Piece: React.FC<PieceProps> = ({ piece, onClick, size = 'medium', s
   // Kombinierte Lösung: Höhe + Schatten, aber Form bleibt quadratisch/rund
   const heightClasses = height === 'tall' 
     ? 'h-12 sm:h-16 shadow-lg' 
-    : 'h-6 sm:h-9 shadow-sm';
+    : 'h-9 sm:h-12 shadow-sm'; // Größer: h-9 statt h-6
   
   // Breite = Höhe für perfekte Quadrate/Kreise
   const widthClasses = height === 'tall'
     ? 'w-12 sm:w-16'
-    : 'w-6 sm:w-9';
+    : 'w-9 sm:w-12'; // Größer: w-9 statt w-6
   
   const colorClasses = color === 'light' ? 'bg-amber-600 border-amber-800' : 'bg-gray-700 border-gray-900';
   // Eckige Steine: keine Abrundung (rounded-none), Runde: volle Abrundung
