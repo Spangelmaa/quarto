@@ -17,13 +17,19 @@ export const Piece: React.FC<PieceProps> = ({ piece, onClick, size = 'medium', s
     large: 'w-16 h-16 sm:w-20 sm:h-20'
   };
   
-  // Kombinierte Lösung: Höhe + Breite + Schatten für maximalen Unterschied
+  // Kombinierte Lösung: Höhe + Schatten, aber Form bleibt quadratisch/rund
   const heightClasses = height === 'tall' 
-    ? 'h-12 sm:h-16 w-11/12 shadow-lg' 
-    : 'h-6 sm:h-9 w-3/4 shadow-sm';
+    ? 'h-12 sm:h-16 shadow-lg' 
+    : 'h-6 sm:h-9 shadow-sm';
+  
+  // Breite = Höhe für perfekte Quadrate/Kreise
+  const widthClasses = height === 'tall'
+    ? 'w-12 sm:w-16'
+    : 'w-6 sm:w-9';
   
   const colorClasses = color === 'light' ? 'bg-amber-600 border-amber-800' : 'bg-gray-700 border-gray-900';
-  const shapeClasses = shape === 'round' ? 'rounded-full' : 'rounded-md';
+  // Eckige Steine: keine Abrundung (rounded-none), Runde: volle Abrundung
+  const shapeClasses = shape === 'round' ? 'rounded-full' : 'rounded-none';
   
   return (
     <div
@@ -31,7 +37,7 @@ export const Piece: React.FC<PieceProps> = ({ piece, onClick, size = 'medium', s
       onClick={onClick}
     >
       <div
-        className={`w-full ${heightClasses} ${colorClasses} ${shapeClasses} border-2 sm:border-4 flex items-center justify-center transition-transform`}
+        className={`${widthClasses} ${heightClasses} ${colorClasses} ${shapeClasses} border-2 sm:border-4 flex items-center justify-center transition-transform`}
       >
         {top === 'hollow' && (
           <div className={`w-3 h-3 sm:w-4 sm:h-4 ${color === 'light' ? 'bg-white' : 'bg-gray-900'} ${shape === 'round' ? 'rounded-full' : 'rounded-sm'}`} />
