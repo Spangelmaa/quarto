@@ -1,10 +1,12 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createInitialGameState } from '@/utils/gameLogic';
 import { Room } from '@/types/multiplayer';
-import { rooms } from '@/lib/roomStorage';
+import { rooms, logRoomStorage } from '@/lib/roomStorage';
 
 export async function POST(request: NextRequest) {
   try {
+    logRoomStorage('CREATE - VOR');
+    
     const { playerId } = await request.json();
     
     // Generiere eindeutige Room-ID (4 Buchstaben)
@@ -22,10 +24,13 @@ export async function POST(request: NextRequest) {
     
     rooms.set(roomId, room);
     
-    console.log(`[CREATE] Raum erstellt: ${roomId}, Spieler1: ${playerId}`);
-    console.log(`[CREATE] rooms Map Reference:`, rooms);
-    console.log(`[CREATE] Gespeicherte Räume:`, Array.from(rooms.keys()));
-    console.log(`[CREATE] Raum gespeichert unter Key:`, roomId, 'Wert:', rooms.get(roomId) ? 'VORHANDEN' : 'FEHLT');
+    console.log(`[CREATE] ✅ Raum erstellt: ${roomId}, Spieler1: ${playerId}`);
+    
+    // Verifiziere sofort dass der Raum abrufbar ist
+    const verification = rooms.get(roomId);
+    console.log(`[CREATE] Verifikation: Raum ${roomId} kann abgerufen werden:`, !!verification);
+    
+    logRoomStorage('CREATE - NACH');
     
     return NextResponse.json({ 
       roomId, 
@@ -33,7 +38,7 @@ export async function POST(request: NextRequest) {
       gameState: room.gameState 
     });
   } catch (error) {
-    console.error('[CREATE] Fehler:', error);
+    console.error('[CREATE] ❌ Fehler:', error);
     return NextResponse.json({ error: 'Fehler beim Erstellen des Raums' }, { status: 500 });
   }
 }
