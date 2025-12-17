@@ -1,12 +1,10 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createInitialGameState } from '@/utils/gameLogic';
 import { Room } from '@/types/multiplayer';
-import { rooms, logRoomStorage } from '@/lib/roomStorage';
+import { setRoom, getRoomCount } from '@/lib/fileStorage';
 
 export async function POST(request: NextRequest) {
   try {
-    logRoomStorage('CREATE - VOR');
-    
     const { playerId } = await request.json();
     
     // Generiere eindeutige Room-ID (4 Buchstaben)
@@ -22,15 +20,10 @@ export async function POST(request: NextRequest) {
       createdAt: Date.now(),
     };
     
-    rooms.set(roomId, room);
+    await setRoom(roomId, room);
     
-    console.log(`[CREATE] ✅ Raum erstellt: ${roomId}, Spieler1: ${playerId}`);
-    
-    // Verifiziere sofort dass der Raum abrufbar ist
-    const verification = rooms.get(roomId);
-    console.log(`[CREATE] Verifikation: Raum ${roomId} kann abgerufen werden:`, !!verification);
-    
-    logRoomStorage('CREATE - NACH');
+    const roomCount = await getRoomCount();
+    console.log(`[CREATE] ✅ Raum erstellt: ${roomId}, Spieler1: ${playerId}, Gesamt: ${roomCount} Räume`);
     
     return NextResponse.json({ 
       roomId, 
