@@ -34,19 +34,31 @@ export default function Home() {
   useEffect(() => {
     if (gameMode !== 'online' || !playerInfo) return;
 
+    console.log('[POLLING] Starte Polling für Raum:', playerInfo.roomId);
+
     const interval = setInterval(async () => {
       const data = await fetchGameState();
       if (data) {
+        console.log('[POLLING] Neuer Spielzustand empfangen:', {
+          currentPlayer: data.gameState.currentPlayer,
+          phase: data.gameState.gamePhase,
+          selectedPiece: data.gameState.selectedPiece?.id,
+          player2: data.players.player2
+        });
         setGameState(data.gameState);
         
         // Prüfe ob Spieler 2 beigetreten ist
         if (waitingForPlayer && data.players.player2) {
+          console.log('[POLLING] Spieler 2 ist beigetreten!');
           setWaitingForPlayer(false);
         }
       }
     }, 1000); // Alle 1 Sekunde aktualisieren
 
-    return () => clearInterval(interval);
+    return () => {
+      console.log('[POLLING] Stoppe Polling');
+      clearInterval(interval);
+    };
   }, [gameMode, playerInfo, fetchGameState, waitingForPlayer]);
 
   const handleCreateRoom = async () => {
@@ -91,6 +103,7 @@ export default function Home() {
     // Online-Modus: Prüfe ob Spieler an der Reihe ist
     if (gameMode === 'online' && playerInfo) {
       if (gameState.currentPlayer !== playerInfo.playerNumber) {
+        console.log('[CLICK] Nicht dein Zug! Du bist Spieler', playerInfo.playerNumber, 'aber Spieler', gameState.currentPlayer, 'ist dran');
         return; // Nicht dein Zug
       }
       if (waitingForPlayer) {
@@ -100,11 +113,14 @@ export default function Home() {
 
     const newState = placePiece(gameState, row, col);
     if (newState) {
+      console.log('[CLICK] Stein platziert bei', row, col);
       setGameState(newState);
       
       // Synchronisiere bei Online-Spiel
       if (gameMode === 'online') {
-        await updateGameState(newState);
+        console.log('[CLICK] Synchronisiere neuen Zustand...');
+        const success = await updateGameState(newState);
+        console.log('[CLICK] Synchronisation erfolgreich:', success);
       }
     }
   };
@@ -115,6 +131,7 @@ export default function Home() {
     // Online-Modus: Prüfe ob Spieler an der Reihe ist
     if (gameMode === 'online' && playerInfo) {
       if (gameState.currentPlayer !== playerInfo.playerNumber) {
+        console.log('[SELECT] Nicht dein Zug! Du bist Spieler', playerInfo.playerNumber, 'aber Spieler', gameState.currentPlayer, 'ist dran');
         return; // Nicht dein Zug
       }
       if (waitingForPlayer) {
@@ -124,11 +141,14 @@ export default function Home() {
 
     const newState = selectPiece(gameState, piece);
     if (newState) {
+      console.log('[SELECT] Stein ausgewählt:', piece.id, 'Nächster Spieler:', newState.currentPlayer);
       setGameState(newState);
       
       // Synchronisiere bei Online-Spiel
       if (gameMode === 'online') {
-        await updateGameState(newState);
+        console.log('[SELECT] Synchronisiere neuen Zustand mit ausgewähltem Stein...');
+        const success = await updateGameState(newState);
+        console.log('[SELECT] Synchronisation erfolgreich:', success);
       }
     }
   };
