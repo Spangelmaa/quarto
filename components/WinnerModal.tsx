@@ -66,7 +66,7 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onB
         {/* Trophäe Animation */}
         {!isDraw && (
           <div className="text-center mb-8 w-full">
-            <div className="text-9xl inline-block animate-bounce ml-8">
+            <div className="text-9xl inline-block animate-bounce ml-16">
               🏆
             </div>
           </div>
