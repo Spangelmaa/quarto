@@ -16,11 +16,32 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Raum nicht gefunden' }, { status: 404 });
     }
     
+    // Prüfe ob Spieler bereits im Raum ist (Rejoin)
+    if (room.players.player1 === playerId) {
+      console.log(`[JOIN] 🔄 Spieler 1 tritt wieder bei: ${playerId}`);
+      return NextResponse.json({ 
+        roomId: room.id, 
+        playerNumber: 1,
+        gameState: room.gameState 
+      });
+    }
+    
+    if (room.players.player2 === playerId) {
+      console.log(`[JOIN] 🔄 Spieler 2 tritt wieder bei: ${playerId}`);
+      return NextResponse.json({ 
+        roomId: room.id, 
+        playerNumber: 2,
+        gameState: room.gameState 
+      });
+    }
+    
+    // Raum ist voll und Spieler ist nicht dabei
     if (room.players.player2) {
       console.log(`[JOIN] ⚠️ Raum ist voll: ${upperRoomId}`);
       return NextResponse.json({ error: 'Raum ist voll' }, { status: 400 });
     }
     
+    // Neuer Spieler tritt als Spieler 2 bei
     room.players.player2 = playerId;
     room.lastActivity = Date.now();
     roomStorage.setRoom(upperRoomId, room);
