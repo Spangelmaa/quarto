@@ -80,31 +80,61 @@ vercel
 
 ```
 quarto/
-├── app/                    # Next.js App Router
-│   ├── page.tsx           # Hauptseite
-│   ├── layout.tsx         # Root Layout
-│   └── globals.css        # Globale Styles
-├── components/            # React Komponenten
-│   ├── Board.tsx         # Spielbrett
-│   ├── Piece.tsx         # Einzelner Spielstein
-│   ├── PieceSelector.tsx # Steinauswahl
-│   └── GameInfo.tsx      # Spielinformationen
-├── types/                # TypeScript Typen
-│   └── game.ts           # Spiel-Typen
-├── utils/                # Hilfsfunktionen
-│   └── gameLogic.ts      # Spiellogik
-└── package.json          # Dependencies
+├── app/                       # Next.js App Router
+│   ├── api/                  # API Routes für Multiplayer
+│   │   └── room/            # Raum-Management
+│   │       ├── create/      # Raum erstellen
+│   │       ├── join/        # Raum beitreten
+│   │       └── state/       # Spielzustand
+│   ├── page.tsx             # Hauptseite
+│   ├── layout.tsx           # Root Layout
+│   └── globals.css          # Globale Styles
+├── components/              # React Komponenten
+│   ├── Board.tsx           # Spielbrett
+│   ├── Piece.tsx           # Einzelner Spielstein
+│   ├── PieceSelector.tsx   # Steinauswahl
+│   ├── GameInfo.tsx        # Spielinformationen
+│   ├── MultiplayerLobby.tsx # Multiplayer-Lobby
+│   └── RoomInfo.tsx        # Raum-Informationen
+├── hooks/                  # Custom React Hooks
+│   └── useMultiplayer.ts   # Multiplayer-Logik
+├── types/                  # TypeScript Typen
+│   ├── game.ts            # Spiel-Typen
+│   └── multiplayer.ts     # Multiplayer-Typen
+├── utils/                  # Hilfsfunktionen
+│   └── gameLogic.ts        # Spiellogik
+└── package.json            # Dependencies
 ```
 
 ## 🎯 Features
 
 - ✅ Vollständige Quarto-Spiellogik
+- ✅ **Online-Multiplayer**: Spiele mit Freunden auf verschiedenen Geräten
+- ✅ **Lokaler Multiplayer**: Spiele zu zweit auf einem Gerät
 - ✅ Interaktive Benutzeroberfläche
-- ✅ Responsive Design
+- ✅ Responsive Design für Mobile & Desktop
 - ✅ Gewinn-Erkennung (alle Richtungen)
 - ✅ Visuelle Darstellung der Spielsteine
+- ✅ Raum-System mit 4-stelligen Codes
+- ✅ Echtzeit-Synchronisation
 - ✅ Spielzustandsverwaltung
 - ✅ Neustart-Funktion
+
+## 🌐 Online-Multiplayer
+
+### So spielst du mit Freunden:
+
+1. **Spieler 1**: Klicke auf "Raum erstellen"
+2. **Spieler 1**: Teile den 4-stelligen Raumcode mit deinem Freund
+3. **Spieler 2**: Gib den Raumcode ein und klicke auf "Beitreten"
+4. **Beide**: Spielt zusammen in Echtzeit!
+
+### Technische Details:
+
+- Automatische Synchronisation über API Routes
+- In-Memory Storage (Server-seitig)
+- Polling-basierte Updates (1 Sekunde Intervall)
+- Funktioniert auf allen Geräten mit Internetverbindung
 
 ## 📝 Lizenz
 

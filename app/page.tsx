@@ -1,61 +1,234 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { GameState, Piece as PieceType } from '@/types/game';
 import { createInitialGameState, placePiece, selectPiece } from '@/utils/gameLogic';
 import { Board } from '@/components/Board';
 import { PieceSelector } from '@/components/PieceSelector';
 import { GameInfo } from '@/components/GameInfo';
+import { MultiplayerLobby } from '@/components/MultiplayerLobby';
+import { RoomInfo } from '@/components/RoomInfo';
+import { useMultiplayer } from '@/hooks/useMultiplayer';
+
+type GameMode = 'lobby' | 'local' | 'online';
 
 export default function Home() {
+  const [gameMode, setGameMode] = useState<GameMode>('lobby');
   const [gameState, setGameState] = useState<GameState>(createInitialGameState());
-  
-  const handleCellClick = (row: number, col: number) => {
+  const [isCreating, setIsCreating] = useState(false);
+  const [waitingForPlayer, setWaitingForPlayer] = useState(false);
+
+  const {
+    playerInfo,
+    isConnected,
+    error,
+    createRoom,
+    joinRoom,
+    updateGameState,
+    fetchGameState,
+    leaveRoom,
+    setError,
+  } = useMultiplayer();
+
+  // Polling für Online-Spiele
+  useEffect(() => {
+    if (gameMode !== 'online' || !playerInfo) return;
+
+    const interval = setInterval(async () => {
+      const data = await fetchGameState();
+      if (data) {
+        setGameState(data.gameState);
+        
+        // Prüfe ob Spieler 2 beigetreten ist
+        if (waitingForPlayer && data.players.player2) {
+          setWaitingForPlayer(false);
+        }
+      }
+    }, 1000); // Alle 1 Sekunde aktualisieren
+
+    return () => clearInterval(interval);
+  }, [gameMode, playerInfo, fetchGameState, waitingForPlayer]);
+
+  const handleCreateRoom = async () => {
+    setIsCreating(true);
+    setError(null);
+    const result = await createRoom();
+    setIsCreating(false);
+
+    if (result) {
+      setGameState(result.gameState);
+      setGameMode('online');
+      setWaitingForPlayer(true);
+    }
+  };
+
+  const handleJoinRoom = async (roomId: string) => {
+    setError(null);
+    const result = await joinRoom(roomId);
+
+    if (result) {
+      setGameState(result.gameState);
+      setGameMode('online');
+      setWaitingForPlayer(false);
+    }
+  };
+
+  const handlePlayLocal = () => {
+    setGameState(createInitialGameState());
+    setGameMode('local');
+  };
+
+  const handleLeaveRoom = () => {
+    leaveRoom();
+    setGameMode('lobby');
+    setGameState(createInitialGameState());
+    setWaitingForPlayer(false);
+  };
+
+  const handleCellClick = async (row: number, col: number) => {
     if (gameState.winner !== null) return;
-    
+
+    // Online-Modus: Prüfe ob Spieler an der Reihe ist
+    if (gameMode === 'online' && playerInfo) {
+      if (gameState.currentPlayer !== playerInfo.playerNumber) {
+        return; // Nicht dein Zug
+      }
+      if (waitingForPlayer) {
+        return; // Warte noch auf zweiten Spieler
+      }
+    }
+
     const newState = placePiece(gameState, row, col);
     if (newState) {
       setGameState(newState);
+      
+      // Synchronisiere bei Online-Spiel
+      if (gameMode === 'online') {
+        await updateGameState(newState);
+      }
     }
   };
-  
-  const handlePieceSelect = (piece: PieceType) => {
+
+  const handlePieceSelect = async (piece: PieceType) => {
     if (gameState.winner !== null) return;
-    
+
+    // Online-Modus: Prüfe ob Spieler an der Reihe ist
+    if (gameMode === 'online' && playerInfo) {
+      if (gameState.currentPlayer !== playerInfo.playerNumber) {
+        return; // Nicht dein Zug
+      }
+      if (waitingForPlayer) {
+        return; // Warte noch auf zweiten Spieler
+      }
+    }
+
     const newState = selectPiece(gameState, piece);
     if (newState) {
       setGameState(newState);
+      
+      // Synchronisiere bei Online-Spiel
+      if (gameMode === 'online') {
+        await updateGameState(newState);
+      }
     }
   };
-  
-  const handleRestart = () => {
+
+  const handleRestart = async () => {
+    const newState = createInitialGameState();
+    setGameState(newState);
+    
+    // Synchronisiere bei Online-Spiel
+    if (gameMode === 'online') {
+      await updateGameState(newState);
+    }
+  };
+
+  const handleBackToLobby = () => {
+    setGameMode('lobby');
     setGameState(createInitialGameState());
   };
-  
+
+  // Zeige Lobby
+  if (gameMode === 'lobby') {
+    return (
+      <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4 flex items-center justify-center">
+        <MultiplayerLobby
+          onCreateRoom={handleCreateRoom}
+          onJoinRoom={handleJoinRoom}
+          onPlayLocal={handlePlayLocal}
+          error={error}
+          isCreating={isCreating}
+        />
+      </main>
+    );
+  }
+
+  // Bestimme ob Spieler an der Reihe ist (für Online-Modus)
+  const isMyTurn = gameMode === 'local' || 
+    (playerInfo && gameState.currentPlayer === playerInfo.playerNumber);
+
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
       <div className="max-w-6xl mx-auto">
-        <h1 className="text-5xl font-bold text-center mb-8 text-gray-800">
-          🎲 Quarto
-        </h1>
-        
-        <div className="bg-white rounded-xl shadow-2xl p-8">
+        <div className="flex items-center justify-between mb-6">
+          <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+            🎲 Quarto
+          </h1>
+          {gameMode === 'local' && (
+            <button
+              onClick={handleBackToLobby}
+              className="px-4 py-2 bg-gray-500 text-white font-semibold rounded-lg hover:bg-gray-600 transition-colors"
+            >
+              Zurück zur Lobby
+            </button>
+          )}
+        </div>
+
+        <div className="bg-white rounded-xl shadow-2xl p-4 md:p-8">
+          {/* Room Info für Online-Spiele */}
+          {gameMode === 'online' && playerInfo && (
+            <RoomInfo
+              playerInfo={playerInfo}
+              waitingForPlayer={waitingForPlayer}
+              onLeaveRoom={handleLeaveRoom}
+            />
+          )}
+
+          {/* Zeige Hinweis wenn nicht am Zug */}
+          {gameMode === 'online' && !waitingForPlayer && !isMyTurn && gameState.winner === null && (
+            <div className="mb-6 p-4 bg-blue-100 border border-blue-300 rounded-lg text-center">
+              <div className="text-blue-800 font-semibold">
+                ⏳ Warte auf Spieler {gameState.currentPlayer}
+              </div>
+            </div>
+          )}
+
           <GameInfo gameState={gameState} onRestart={handleRestart} />
-          
+
           <div className="flex justify-center mb-6">
             <Board
               board={gameState.board}
               onCellClick={handleCellClick}
-              canPlacePiece={gameState.gamePhase === 'placePiece' && gameState.winner === null}
+              canPlacePiece={
+                gameState.gamePhase === 'placePiece' && 
+                gameState.winner === null && 
+                !waitingForPlayer &&
+                isMyTurn
+              }
             />
           </div>
-          
+
           <PieceSelector
             pieces={gameState.availablePieces}
             onPieceSelect={handlePieceSelect}
-            disabled={gameState.gamePhase !== 'selectPiece' || gameState.winner !== null}
+            disabled={
+              gameState.gamePhase !== 'selectPiece' || 
+              gameState.winner !== null || 
+              waitingForPlayer ||
+              !isMyTurn
+            }
           />
-          
+
           <div className="mt-8 p-4 bg-gray-50 rounded-lg">
             <h3 className="font-bold mb-2">📖 Spielregeln:</h3>
             <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
