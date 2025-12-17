@@ -105,24 +105,37 @@ export const useMultiplayer = () => {
 
   // Hole Spielzustand
   const fetchGameState = useCallback(async (): Promise<{ gameState: GameState; players: any } | null> => {
-    if (!playerInfo) return null;
+    if (!playerInfo) {
+      console.log('[FETCH] Kein playerInfo vorhanden, überspringe fetch');
+      return null;
+    }
 
     try {
       const response = await fetch(`/api/room/state?roomId=${playerInfo.roomId}`);
-      if (!response.ok) throw new Error('Fehler beim Abrufen');
+      if (!response.ok) {
+        const errorData = await response.json();
+        console.error('[FETCH] Fehler beim Abrufen:', errorData);
+        throw new Error(errorData.error || 'Fehler beim Abrufen');
+      }
       
       const data = await response.json();
       return data;
-    } catch (err) {
-      setError('Fehler beim Abrufen des Spielstands');
+    } catch (err: any) {
+      console.error('[FETCH] Exception beim Abrufen:', err.message);
+      // Setze Fehler nur wenn playerInfo noch existiert (sonst verlassen wir gerade die Lobby)
+      if (playerInfo) {
+        setError('Fehler beim Abrufen des Spielstands');
+      }
       return null;
     }
   }, [playerInfo]);
 
   // Verlasse Raum
   const leaveRoom = useCallback(() => {
+    console.log('[LEAVE] Verlasse Raum');
     setPlayerInfo(null);
     setIsConnected(false);
+    setError(null); // Lösche auch Fehler beim Verlassen
     localStorage.removeItem('playerInfo');
   }, []);
 

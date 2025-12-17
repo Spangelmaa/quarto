@@ -32,13 +32,20 @@ export default function Home() {
 
   // Polling für Online-Spiele
   useEffect(() => {
-    if (gameMode !== 'online' || !playerInfo) return;
+    if (gameMode !== 'online' || !playerInfo) {
+      console.log('[POLLING] Polling gestoppt - Modus:', gameMode);
+      return;
+    }
 
     console.log('[POLLING] Starte Polling für Raum:', playerInfo.roomId);
 
+    let isActive = true; // Flag um zu prüfen ob Component noch gemounted ist
+
     const interval = setInterval(async () => {
+      if (!isActive) return; // Nicht mehr aktiv, ignoriere
+      
       const data = await fetchGameState();
-      if (data) {
+      if (data && isActive) {
         console.log('[POLLING] Neuer Spielzustand empfangen:', {
           currentPlayer: data.gameState.currentPlayer,
           phase: data.gameState.gamePhase,
@@ -56,7 +63,8 @@ export default function Home() {
     }, 1000); // Alle 1 Sekunde aktualisieren
 
     return () => {
-      console.log('[POLLING] Stoppe Polling');
+      console.log('[POLLING] Stoppe Polling für Raum:', playerInfo.roomId);
+      isActive = false;
       clearInterval(interval);
     };
   }, [gameMode, playerInfo, fetchGameState, waitingForPlayer]);
