@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${data}\n\n`));
       }
       
-      // Heartbeat alle 15 Sekunden (verhindert Timeout)
+      // Heartbeat alle 10 Sekunden (verhindert Timeout bei Inaktivität)
       const heartbeatInterval = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': heartbeat\n\n'));
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           clearInterval(heartbeatInterval);
           removeConnection(upperRoomId, controller);
         }
-      }, 15000);
+      }, 10000); // 10 Sekunden statt 15
       
       // Cleanup bei Verbindungsabbruch
       request.signal.addEventListener('abort', () => {
@@ -69,6 +69,7 @@ export async function GET(request: NextRequest) {
       'Cache-Control': 'no-cache, no-transform',
       'Connection': 'keep-alive',
       'X-Accel-Buffering': 'no',
+      'Keep-Alive': 'timeout=300, max=1000', // Lange Timeouts für Inaktivität
     },
   });
 }

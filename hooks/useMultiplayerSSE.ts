@@ -58,9 +58,9 @@ export const useMultiplayerSSE = () => {
       fallbackPollingRef.current = setInterval(async () => {
         const timeSinceLastMessage = Date.now() - lastSSEMessageRef.current;
         
-        // Wenn länger als 30 Sekunden keine SSE-Nachricht, hole State manuell
-        if (timeSinceLastMessage > 30000) {
-          console.log('[FALLBACK] ⚠️ Keine SSE-Nachricht seit 30s, hole State manuell');
+        // Wenn länger als 20 Sekunden keine SSE-Nachricht, hole State manuell
+        if (timeSinceLastMessage > 20000) {
+          console.log('[FALLBACK] ⚠️ Keine SSE-Nachricht seit 20s, hole State manuell');
           try {
             const response = await fetch(`/api/room/state?roomId=${roomId}`);
             if (response.ok) {
@@ -69,13 +69,20 @@ export const useMultiplayerSSE = () => {
               if (data.players.player2) {
                 setWaitingForPlayer(false);
               }
+              lastSSEMessageRef.current = Date.now(); // Reset timer nach erfolgreichem Fallback
               console.log('[FALLBACK] ✅ State manuell aktualisiert');
+              
+              // Wenn SSE tot ist, versuche Reconnect
+              if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
+                console.log('[FALLBACK] SSE ist tot, starte Reconnect');
+                connectSSE(roomId);
+              }
             }
           } catch (e) {
             console.error('[FALLBACK] ❌ Fehler beim manuellen Abrufen:', e);
           }
         }
-      }, 5000);
+      }, 3000); // Prüfe häufiger (alle 3 Sekunden statt 5)
     };
 
     eventSource.onmessage = (event) => {
@@ -111,24 +118,35 @@ export const useMultiplayerSSE = () => {
       // Prüfe ReadyState um zu sehen ob Verbindung wirklich tot ist
       if (eventSource.readyState === EventSource.CLOSED) {
         console.log('[SSE] Verbindung endgültig geschlossen, reconnecte...');
-        setConnectionStatus('error');
+        
+        // Setze Status NICHT sofort auf error, wir haben ja Fallback-Polling
+        // Zeige weiter "connected" solange Fallback funktioniert
         
         // Automatischer Reconnect mit exponential backoff
-        const maxAttempts = 10; // Erhöht von 5 auf 10
+        const maxAttempts = 20; // Erhöht auf 20 Versuche
         if (reconnectAttemptsRef.current < maxAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 5000); // Max 5s
           console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${maxAttempts})`);
+          
+          // Zeige nur bei wiederholten Versuchen Fehler
+          if (reconnectAttemptsRef.current > 3) {
+            setConnectionStatus('error');
+          }
           
           reconnectTimeoutRef.current = setTimeout(() => {
             reconnectAttemptsRef.current++;
             connectSSE(roomId);
           }, delay);
         } else {
-          setError('Verbindung verloren. Bitte Seite neu laden.');
+          setConnectionStatus('error');
+          setError('Verbindung instabil. Spiel läuft im Fallback-Modus weiter.');
         }
       } else if (eventSource.readyState === EventSource.CONNECTING) {
         console.log('[SSE] ⏳ Verbindung wird hergestellt...');
-        setConnectionStatus('connecting');
+        // Zeige nur bei erstem Versuch "connecting"
+        if (reconnectAttemptsRef.current === 0) {
+          setConnectionStatus('connecting');
+        }
       }
     };
   }, []);
