@@ -42,7 +42,7 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${data}\n\n`));
       }
       
-      // Heartbeat alle 10 Sekunden (verhindert Timeout bei Inaktivität)
+      // Heartbeat alle 5 Sekunden (aggressiv gegen Vercel Timeouts)
       const heartbeatInterval = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': heartbeat\n\n'));
@@ -52,7 +52,7 @@ export async function GET(request: NextRequest) {
           clearInterval(heartbeatInterval);
           removeConnection(upperRoomId, controller);
         }
-      }, 10000); // 10 Sekunden statt 15
+      }, 5000); // 5 Sekunden - sehr aggressiv gegen Timeouts
       
       // Cleanup bei Verbindungsabbruch
       request.signal.addEventListener('abort', () => {

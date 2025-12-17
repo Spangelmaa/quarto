@@ -58,9 +58,9 @@ export const useMultiplayerSSE = () => {
       fallbackPollingRef.current = setInterval(async () => {
         const timeSinceLastMessage = Date.now() - lastSSEMessageRef.current;
         
-        // Wenn länger als 20 Sekunden keine SSE-Nachricht, hole State manuell
-        if (timeSinceLastMessage > 20000) {
-          console.log('[FALLBACK] ⚠️ Keine SSE-Nachricht seit 20s, hole State manuell');
+        // Wenn länger als 12 Sekunden keine SSE-Nachricht, hole State manuell
+        if (timeSinceLastMessage > 12000) {
+          console.log('[FALLBACK] ⚠️ Keine SSE-Nachricht seit 12s, hole State manuell');
           try {
             const response = await fetch(`/api/room/state?roomId=${roomId}`);
             if (response.ok) {
@@ -82,7 +82,7 @@ export const useMultiplayerSSE = () => {
             console.error('[FALLBACK] ❌ Fehler beim manuellen Abrufen:', e);
           }
         }
-      }, 3000); // Prüfe häufiger (alle 3 Sekunden statt 5)
+      }, 2000); // Prüfe sehr häufig (alle 2 Sekunden)
     };
 
     eventSource.onmessage = (event) => {
@@ -123,13 +123,13 @@ export const useMultiplayerSSE = () => {
         // Zeige weiter "connected" solange Fallback funktioniert
         
         // Automatischer Reconnect mit exponential backoff
-        const maxAttempts = 20; // Erhöht auf 20 Versuche
+        const maxAttempts = 50; // Sehr viele Versuche
         if (reconnectAttemptsRef.current < maxAttempts) {
-          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 5000); // Max 5s
+          const delay = Math.min(500 * Math.pow(1.5, reconnectAttemptsRef.current), 3000); // Max 3s, schnellerer Start
           console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${maxAttempts})`);
           
-          // Zeige nur bei wiederholten Versuchen Fehler
-          if (reconnectAttemptsRef.current > 3) {
+          // Zeige Fehler erst nach vielen Versuchen (Fallback läuft ja)
+          if (reconnectAttemptsRef.current > 5) {
             setConnectionStatus('error');
           }
           
@@ -139,7 +139,7 @@ export const useMultiplayerSSE = () => {
           }, delay);
         } else {
           setConnectionStatus('error');
-          setError('Verbindung instabil. Spiel läuft im Fallback-Modus weiter.');
+          setError('SSE instabil. Spiel läuft im Fallback-Polling-Modus weiter.');
         }
       } else if (eventSource.readyState === EventSource.CONNECTING) {
         console.log('[SSE] ⏳ Verbindung wird hergestellt...');
