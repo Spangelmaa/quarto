@@ -117,58 +117,99 @@ export default function Home() {
   };
 
   const handleCellClick = async (row: number, col: number) => {
-    if (gameState.winner !== null) return;
+    console.log('[CLICK HANDLER] Gestartet:', {
+      position: [row, col],
+      currentState: {
+        player: gameState.currentPlayer,
+        phase: gameState.gamePhase,
+        selectedPiece: gameState.selectedPiece?.id,
+        myNumber: playerInfo?.playerNumber
+      }
+    });
+
+    if (gameState.winner !== null) {
+      console.log('[CLICK HANDLER] Abbruch: Spiel beendet');
+      return;
+    }
 
     // Online-Modus: Prüfe ob Spieler an der Reihe ist
     if (gameMode === 'online' && playerInfo) {
       if (gameState.currentPlayer !== playerInfo.playerNumber) {
-        console.log('[CLICK] Nicht dein Zug! Du bist Spieler', playerInfo.playerNumber, 'aber Spieler', gameState.currentPlayer, 'ist dran');
-        return; // Nicht dein Zug
+        console.log('[CLICK HANDLER] ❌ Nicht dein Zug! Du bist Spieler', playerInfo.playerNumber, 'aber Spieler', gameState.currentPlayer, 'ist dran');
+        return;
       }
       if (waitingForPlayer) {
-        return; // Warte noch auf zweiten Spieler
+        console.log('[CLICK HANDLER] Warte auf Spieler 2');
+        return;
       }
     }
 
     const newState = placePiece(gameState, row, col);
     if (newState) {
-      console.log('[CLICK] Stein platziert bei', row, col);
+      console.log('[CLICK HANDLER] ✅ Neuer State:', {
+        currentPlayer: newState.currentPlayer,
+        phase: newState.gamePhase,
+        selectedPiece: newState.selectedPiece
+      });
+      
       setGameState(newState);
       
       // Synchronisiere bei Online-Spiel
       if (gameMode === 'online') {
-        console.log('[CLICK] Synchronisiere neuen Zustand...');
+        console.log('[CLICK HANDLER] Synchronisiere...');
         const success = await updateGameState(newState);
-        console.log('[CLICK] Synchronisation erfolgreich:', success);
+        console.log('[CLICK HANDLER] Synchronisation:', success ? '✅' : '❌');
       }
+    } else {
+      console.log('[CLICK HANDLER] ❌ placePiece returned null');
     }
   };
 
   const handlePieceSelect = async (piece: PieceType) => {
-    if (gameState.winner !== null) return;
+    console.log('[SELECT HANDLER] Gestartet:', {
+      piece: piece.id,
+      currentState: {
+        player: gameState.currentPlayer,
+        phase: gameState.gamePhase,
+        myNumber: playerInfo?.playerNumber
+      }
+    });
+
+    if (gameState.winner !== null) {
+      console.log('[SELECT HANDLER] Abbruch: Spiel beendet');
+      return;
+    }
 
     // Online-Modus: Prüfe ob Spieler an der Reihe ist
     if (gameMode === 'online' && playerInfo) {
       if (gameState.currentPlayer !== playerInfo.playerNumber) {
-        console.log('[SELECT] Nicht dein Zug! Du bist Spieler', playerInfo.playerNumber, 'aber Spieler', gameState.currentPlayer, 'ist dran');
-        return; // Nicht dein Zug
+        console.log('[SELECT HANDLER] ❌ Nicht dein Zug! Du bist Spieler', playerInfo.playerNumber, 'aber Spieler', gameState.currentPlayer, 'ist dran');
+        return;
       }
       if (waitingForPlayer) {
-        return; // Warte noch auf zweiten Spieler
+        console.log('[SELECT HANDLER] Warte auf Spieler 2');
+        return;
       }
     }
 
     const newState = selectPiece(gameState, piece);
     if (newState) {
-      console.log('[SELECT] Stein ausgewählt:', piece.id, 'Nächster Spieler:', newState.currentPlayer);
+      console.log('[SELECT HANDLER] ✅ Neuer State:', {
+        currentPlayer: newState.currentPlayer,
+        phase: newState.gamePhase,
+        selectedPiece: newState.selectedPiece?.id
+      });
+      
       setGameState(newState);
       
       // Synchronisiere bei Online-Spiel
       if (gameMode === 'online') {
-        console.log('[SELECT] Synchronisiere neuen Zustand mit ausgewähltem Stein...');
+        console.log('[SELECT HANDLER] Synchronisiere...');
         const success = await updateGameState(newState);
-        console.log('[SELECT] Synchronisation erfolgreich:', success);
+        console.log('[SELECT HANDLER] Synchronisation:', success ? '✅' : '❌');
       }
+    } else {
+      console.log('[SELECT HANDLER] ❌ selectPiece returned null');
     }
   };
 
