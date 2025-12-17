@@ -8,77 +8,34 @@ import { PieceSelector } from '@/components/PieceSelector';
 import { GameInfo } from '@/components/GameInfo';
 import { MultiplayerLobby } from '@/components/MultiplayerLobby';
 import { RoomInfo } from '@/components/RoomInfo';
-import { useMultiplayer } from '@/hooks/useMultiplayer';
+import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { useMultiplayerSSE } from '@/hooks/useMultiplayerSSE';
 
 type GameMode = 'lobby' | 'local' | 'online';
 
 export default function Home() {
   const [gameMode, setGameMode] = useState<GameMode>('lobby');
-  const [gameState, setGameState] = useState<GameState>(createInitialGameState());
+  const [localGameState, setLocalGameState] = useState<GameState>(createInitialGameState());
   const [isCreating, setIsCreating] = useState(false);
-  const [waitingForPlayer, setWaitingForPlayer] = useState(false);
 
   const {
     playerInfo,
-    isConnected,
+    gameState: onlineGameState,
+    connectionStatus,
+    waitingForPlayer,
     error,
     createRoom,
     joinRoom,
     updateGameState,
-    fetchGameState,
     leaveRoom,
     setError,
-  } = useMultiplayer();
+    setGameState: setOnlineGameState,
+  } = useMultiplayerSSE();
+  
+  // Verwende lokalen oder Online-State je nach Modus
+  const gameState = gameMode === 'online' ? (onlineGameState || createInitialGameState()) : localGameState;
 
-  // Polling für Online-Spiele - NUR wenn nicht am Zug
-  useEffect(() => {
-    if (gameMode !== 'online' || !playerInfo) {
-      return;
-    }
-
-    console.log('[POLLING] Starte Polling für Raum:', playerInfo.roomId);
-
-    let isActive = true;
-    let lastUpdate = Date.now();
-
-    const interval = setInterval(async () => {
-      if (!isActive) return;
-      
-      // NUR pollen wenn wir NICHT am Zug sind
-      const isMyTurn = gameState.currentPlayer === playerInfo.playerNumber;
-      if (isMyTurn && !waitingForPlayer) {
-        console.log('[POLLING] Überspringe - ich bin am Zug');
-        return;
-      }
-      
-      const data = await fetchGameState();
-      if (data && isActive) {
-        const now = Date.now();
-        // Nur updaten wenn sich was geändert hat
-        if (JSON.stringify(data.gameState) !== JSON.stringify(gameState)) {
-          console.log('[POLLING] Zustand geändert, aktualisiere...', {
-            currentPlayer: data.gameState.currentPlayer,
-            phase: data.gameState.gamePhase,
-            selectedPiece: data.gameState.selectedPiece?.id
-          });
-          setGameState(data.gameState);
-          lastUpdate = now;
-        }
-        
-        // Prüfe ob Spieler 2 beigetreten ist
-        if (waitingForPlayer && data.players.player2) {
-          console.log('[POLLING] Spieler 2 ist beigetreten!');
-          setWaitingForPlayer(false);
-        }
-      }
-    }, 1500); // Alle 1.5 Sekunden aktualisieren (weniger aggressiv)
-
-    return () => {
-      console.log('[POLLING] Stoppe Polling');
-      isActive = false;
-      clearInterval(interval);
-    };
-  }, [gameMode, playerInfo, gameState, waitingForPlayer, fetchGameState]);
+  // Kein Polling mehr nötig - SSE handhabt Updates in Echtzeit!
 
   const handleCreateRoom = async () => {
     setIsCreating(true);
@@ -87,9 +44,7 @@ export default function Home() {
     setIsCreating(false);
 
     if (result) {
-      setGameState(result.gameState);
       setGameMode('online');
-      setWaitingForPlayer(true);
     }
   };
 
@@ -98,22 +53,19 @@ export default function Home() {
     const result = await joinRoom(roomId);
 
     if (result) {
-      setGameState(result.gameState);
       setGameMode('online');
-      setWaitingForPlayer(false);
     }
   };
 
   const handlePlayLocal = () => {
-    setGameState(createInitialGameState());
+    setLocalGameState(createInitialGameState());
     setGameMode('local');
   };
 
   const handleLeaveRoom = () => {
     leaveRoom();
     setGameMode('lobby');
-    setGameState(createInitialGameState());
-    setWaitingForPlayer(false);
+    setLocalGameState(createInitialGameState());
   };
 
   const handleCellClick = async (row: number, col: number) => {
@@ -152,13 +104,14 @@ export default function Home() {
         selectedPiece: newState.selectedPiece
       });
       
-      setGameState(newState);
-      
-      // Synchronisiere bei Online-Spiel
       if (gameMode === 'online') {
+        // Online: Optimistisches Update via SSE Hook
         console.log('[CLICK HANDLER] Synchronisiere...');
         const success = await updateGameState(newState);
         console.log('[CLICK HANDLER] Synchronisation:', success ? '✅' : '❌');
+      } else {
+        // Lokal: Direktes Update
+        setLocalGameState(newState);
       }
     } else {
       console.log('[CLICK HANDLER] ❌ placePiece returned null');
@@ -200,13 +153,14 @@ export default function Home() {
         selectedPiece: newState.selectedPiece?.id
       });
       
-      setGameState(newState);
-      
-      // Synchronisiere bei Online-Spiel
       if (gameMode === 'online') {
+        // Online: Optimistisches Update via SSE Hook
         console.log('[SELECT HANDLER] Synchronisiere...');
         const success = await updateGameState(newState);
         console.log('[SELECT HANDLER] Synchronisation:', success ? '✅' : '❌');
+      } else {
+        // Lokal: Direktes Update
+        setLocalGameState(newState);
       }
     } else {
       console.log('[SELECT HANDLER] ❌ selectPiece returned null');
@@ -215,17 +169,19 @@ export default function Home() {
 
   const handleRestart = async () => {
     const newState = createInitialGameState();
-    setGameState(newState);
     
-    // Synchronisiere bei Online-Spiel
     if (gameMode === 'online') {
+      // Online: Optimistisches Update via SSE Hook
       await updateGameState(newState);
+    } else {
+      // Lokal: Direktes Update
+      setLocalGameState(newState);
     }
   };
 
   const handleBackToLobby = () => {
     setGameMode('lobby');
-    setGameState(createInitialGameState());
+    setLocalGameState(createInitialGameState());
   };
 
   // Zeige Lobby
@@ -272,6 +228,17 @@ export default function Home() {
               waitingForPlayer={waitingForPlayer}
               onLeaveRoom={handleLeaveRoom}
             />
+          )}
+
+          {/* Verbindungsstatus */}
+          {gameMode === 'online' && (
+            <div className="mb-4">
+              <ConnectionStatus 
+                status={connectionStatus} 
+                error={error}
+                waitingForPlayer={waitingForPlayer}
+              />
+            </div>
           )}
 
           {/* Zeige Hinweis wenn nicht am Zug */}

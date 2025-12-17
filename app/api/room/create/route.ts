@@ -18,6 +18,7 @@ export async function POST(request: NextRequest) {
         player2: null,
       },
       createdAt: Date.now(),
+      lastActivity: Date.now(),
     };
     
     roomStorage.setRoom(roomId, room);

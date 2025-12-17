@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { roomStorage } from '@/lib/roomStorage';
+import { broadcastRoomUpdate } from '../subscribe/route';
 
 export async function GET(request: NextRequest) {
   try {
@@ -52,9 +53,13 @@ export async function POST(request: NextRequest) {
     }
     
     room.gameState = gameState;
+    room.lastActivity = Date.now();
     roomStorage.setRoom(upperRoomId, room);
     
     console.log(`[STATE UPDATE] ✅ Zustand gespeichert für Raum ${upperRoomId}`);
+    
+    // Broadcast Update via SSE
+    broadcastRoomUpdate(upperRoomId);
     
     return NextResponse.json({ success: true, gameState: room.gameState });
   } catch (error) {

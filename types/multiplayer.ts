@@ -8,6 +8,7 @@ export type Room = {
     player2: string | null;
   };
   createdAt: number;
+  lastActivity: number;
 };
 
 export type PlayerInfo = {

@@ -30,8 +30,14 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
       </h2>
 
       {error && (
-        <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded-lg">
-          {error}
+        <div className="mb-4 p-4 bg-red-50 border-2 border-red-200 rounded-lg">
+          <div className="flex items-start gap-3">
+            <span className="text-2xl">❌</span>
+            <div>
+              <div className="font-bold text-red-800 mb-1">Fehler</div>
+              <div className="text-red-700 text-sm">{error}</div>
+            </div>
+          </div>
         </div>
       )}
 

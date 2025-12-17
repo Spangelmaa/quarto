@@ -1,5 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { roomStorage } from '@/lib/roomStorage';
+import { broadcastRoomUpdate } from '../subscribe/route';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,9 +22,13 @@ export async function POST(request: NextRequest) {
     }
     
     room.players.player2 = playerId;
+    room.lastActivity = Date.now();
     roomStorage.setRoom(upperRoomId, room);
     
     console.log(`[JOIN] ✅ Spieler 2 beigetreten: ${playerId} in Raum ${upperRoomId}`);
+    
+    // Broadcast an Spieler 1 dass Spieler 2 beigetreten ist
+    broadcastRoomUpdate(upperRoomId);
     
     return NextResponse.json({ 
       roomId: room.id, 
