@@ -100,12 +100,10 @@ export const placePiece = (
   newBoard[row][col] = gameState.selectedPiece;
   
   const hasWinner = checkWinner(newBoard);
-  const newAvailablePieces = gameState.availablePieces.filter(
-    p => p.id !== gameState.selectedPiece!.id
-  );
   
+  // Stein wurde bereits beim Auswählen entfernt, daher keine weitere Filterung nötig
   // Unentschieden wenn keine Steine mehr verfügbar
-  const isDraw = newAvailablePieces.length === 0 && !hasWinner;
+  const isDraw = gameState.availablePieces.length === 0 && !hasWinner;
   
   const newState: GameState = {
     ...gameState,
@@ -114,8 +112,8 @@ export const placePiece = (
     winner: hasWinner ? gameState.currentPlayer : (isDraw ? 0 : null),
     // Spieler bleibt gleich - er wählt jetzt einen Stein für den Gegner
     currentPlayer: gameState.currentPlayer,
-    gamePhase: (hasWinner || isDraw) ? 'placePiece' : 'selectPiece' as 'selectPiece' | 'placePiece',
-    availablePieces: newAvailablePieces
+    gamePhase: (hasWinner || isDraw) ? 'placePiece' : 'selectPiece' as 'selectPiece' | 'placePiece'
+    // availablePieces bleibt unverändert (wurde schon bei selectPiece aktualisiert)
   };
   
   console.log('[GAME LOGIC] placePiece Ergebnis:', {
@@ -145,17 +143,22 @@ export const selectPiece = (gameState: GameState, piece: Piece): GameState | nul
   // Der Spielerwechsel passiert NACH dem Auswählen
   const nextPlayer = gameState.currentPlayer === 1 ? 2 : 1;
   
+  // Entferne den ausgewählten Stein sofort aus der Liste
+  const newAvailablePieces = gameState.availablePieces.filter(p => p.id !== piece.id);
+  
   const newState: GameState = {
     ...gameState,
     selectedPiece: piece,
     gamePhase: 'placePiece' as const,
-    currentPlayer: nextPlayer // Jetzt ist der andere Spieler dran zum Platzieren
+    currentPlayer: nextPlayer, // Jetzt ist der andere Spieler dran zum Platzieren
+    availablePieces: newAvailablePieces // Aktualisierte Liste ohne ausgewählten Stein
   };
   
   console.log('[GAME LOGIC] selectPiece Ergebnis:', {
     currentPlayer: newState.currentPlayer,
     phase: newState.gamePhase,
-    selectedPiece: newState.selectedPiece?.id
+    selectedPiece: newState.selectedPiece?.id,
+    remainingPieces: newState.availablePieces.length
   });
   
   return newState;
