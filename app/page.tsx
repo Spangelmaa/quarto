@@ -30,29 +30,40 @@ export default function Home() {
     setError,
   } = useMultiplayer();
 
-  // Polling für Online-Spiele
+  // Polling für Online-Spiele - NUR wenn nicht am Zug
   useEffect(() => {
     if (gameMode !== 'online' || !playerInfo) {
-      console.log('[POLLING] Polling gestoppt - Modus:', gameMode);
       return;
     }
 
     console.log('[POLLING] Starte Polling für Raum:', playerInfo.roomId);
 
-    let isActive = true; // Flag um zu prüfen ob Component noch gemounted ist
+    let isActive = true;
+    let lastUpdate = Date.now();
 
     const interval = setInterval(async () => {
-      if (!isActive) return; // Nicht mehr aktiv, ignoriere
+      if (!isActive) return;
+      
+      // NUR pollen wenn wir NICHT am Zug sind
+      const isMyTurn = gameState.currentPlayer === playerInfo.playerNumber;
+      if (isMyTurn && !waitingForPlayer) {
+        console.log('[POLLING] Überspringe - ich bin am Zug');
+        return;
+      }
       
       const data = await fetchGameState();
       if (data && isActive) {
-        console.log('[POLLING] Neuer Spielzustand empfangen:', {
-          currentPlayer: data.gameState.currentPlayer,
-          phase: data.gameState.gamePhase,
-          selectedPiece: data.gameState.selectedPiece?.id,
-          player2: data.players.player2
-        });
-        setGameState(data.gameState);
+        const now = Date.now();
+        // Nur updaten wenn sich was geändert hat
+        if (JSON.stringify(data.gameState) !== JSON.stringify(gameState)) {
+          console.log('[POLLING] Zustand geändert, aktualisiere...', {
+            currentPlayer: data.gameState.currentPlayer,
+            phase: data.gameState.gamePhase,
+            selectedPiece: data.gameState.selectedPiece?.id
+          });
+          setGameState(data.gameState);
+          lastUpdate = now;
+        }
         
         // Prüfe ob Spieler 2 beigetreten ist
         if (waitingForPlayer && data.players.player2) {
@@ -60,14 +71,14 @@ export default function Home() {
           setWaitingForPlayer(false);
         }
       }
-    }, 1000); // Alle 1 Sekunde aktualisieren
+    }, 1500); // Alle 1.5 Sekunden aktualisieren (weniger aggressiv)
 
     return () => {
-      console.log('[POLLING] Stoppe Polling für Raum:', playerInfo.roomId);
+      console.log('[POLLING] Stoppe Polling');
       isActive = false;
       clearInterval(interval);
     };
-  }, [gameMode, playerInfo, fetchGameState, waitingForPlayer]);
+  }, [gameMode, playerInfo, gameState, waitingForPlayer, fetchGameState]);
 
   const handleCreateRoom = async () => {
     setIsCreating(true);
