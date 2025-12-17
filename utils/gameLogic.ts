@@ -79,11 +79,20 @@ export const placePiece = (
   row: number,
   col: number
 ): GameState | null => {
+  console.log('[GAME LOGIC] placePiece aufgerufen:', {
+    row, col,
+    currentPlayer: gameState.currentPlayer,
+    phase: gameState.gamePhase,
+    selectedPiece: gameState.selectedPiece?.id
+  });
+  
   if (gameState.gamePhase !== 'placePiece' || !gameState.selectedPiece) {
+    console.log('[GAME LOGIC] placePiece abgelehnt: Phase oder Stein fehlt');
     return null;
   }
   
   if (gameState.board[row][col] !== null) {
+    console.log('[GAME LOGIC] placePiece abgelehnt: Feld belegt');
     return null; // Feld bereits belegt
   }
   
@@ -98,21 +107,37 @@ export const placePiece = (
   // Unentschieden wenn keine Steine mehr verfügbar
   const isDraw = newAvailablePieces.length === 0 && !hasWinner;
   
-  return {
+  const newState: GameState = {
     ...gameState,
     board: newBoard,
     selectedPiece: null,
     winner: hasWinner ? gameState.currentPlayer : (isDraw ? 0 : null),
     // Spieler bleibt gleich - er wählt jetzt einen Stein für den Gegner
     currentPlayer: gameState.currentPlayer,
-    gamePhase: (hasWinner || isDraw) ? 'placePiece' : 'selectPiece',
+    gamePhase: (hasWinner || isDraw) ? 'placePiece' : 'selectPiece' as 'selectPiece' | 'placePiece',
     availablePieces: newAvailablePieces
   };
+  
+  console.log('[GAME LOGIC] placePiece Ergebnis:', {
+    currentPlayer: newState.currentPlayer,
+    phase: newState.gamePhase,
+    selectedPiece: newState.selectedPiece,
+    winner: newState.winner
+  });
+  
+  return newState;
 };
 
 // Spielstein für den Gegner auswählen
 export const selectPiece = (gameState: GameState, piece: Piece): GameState | null => {
+  console.log('[GAME LOGIC] selectPiece aufgerufen:', {
+    pieceId: piece.id,
+    currentPlayer: gameState.currentPlayer,
+    phase: gameState.gamePhase
+  });
+  
   if (gameState.gamePhase !== 'selectPiece') {
+    console.log('[GAME LOGIC] selectPiece abgelehnt: Falsche Phase');
     return null;
   }
   
@@ -120,10 +145,18 @@ export const selectPiece = (gameState: GameState, piece: Piece): GameState | nul
   // Der Spielerwechsel passiert NACH dem Auswählen
   const nextPlayer = gameState.currentPlayer === 1 ? 2 : 1;
   
-  return {
+  const newState: GameState = {
     ...gameState,
     selectedPiece: piece,
-    gamePhase: 'placePiece',
+    gamePhase: 'placePiece' as const,
     currentPlayer: nextPlayer // Jetzt ist der andere Spieler dran zum Platzieren
   };
+  
+  console.log('[GAME LOGIC] selectPiece Ergebnis:', {
+    currentPlayer: newState.currentPlayer,
+    phase: newState.gamePhase,
+    selectedPiece: newState.selectedPiece?.id
+  });
+  
+  return newState;
 };
