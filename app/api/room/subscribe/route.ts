@@ -42,14 +42,17 @@ export async function GET(request: NextRequest) {
         controller.enqueue(encoder.encode(`data: ${data}\n\n`));
       }
       
-      // Heartbeat alle 30 Sekunden
+      // Heartbeat alle 15 Sekunden (verhindert Timeout)
       const heartbeatInterval = setInterval(() => {
         try {
           controller.enqueue(encoder.encode(': heartbeat\n\n'));
+          console.log(`[SSE] 💓 Heartbeat gesendet an Raum ${upperRoomId}`);
         } catch (e) {
+          console.error(`[SSE] ❌ Heartbeat fehlgeschlagen für Raum ${upperRoomId}:`, e);
           clearInterval(heartbeatInterval);
+          removeConnection(upperRoomId, controller);
         }
-      }, 30000);
+      }, 15000);
       
       // Cleanup bei Verbindungsabbruch
       request.signal.addEventListener('abort', () => {

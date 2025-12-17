@@ -17,6 +17,8 @@ export const useMultiplayerSSE = () => {
   const pendingStateRef = useRef<GameState | null>(null);
   const updateInProgressRef = useRef(false);
   const lastUpdateTimeRef = useRef(0);
+  const fallbackPollingRef = useRef<NodeJS.Timeout | null>(null);
+  const lastSSEMessageRef = useRef<number>(Date.now());
 
   // Generiere eindeutige Player ID
   const getPlayerId = useCallback(() => {
@@ -45,11 +47,41 @@ export const useMultiplayerSSE = () => {
       console.log('[SSE] ✅ Verbunden');
       setConnectionStatus('connected');
       reconnectAttemptsRef.current = 0;
+      lastSSEMessageRef.current = Date.now();
       setError(null);
+      
+      // Starte Fallback-Polling als Sicherheit (alle 5 Sekunden prüfen)
+      if (fallbackPollingRef.current) {
+        clearInterval(fallbackPollingRef.current);
+      }
+      
+      fallbackPollingRef.current = setInterval(async () => {
+        const timeSinceLastMessage = Date.now() - lastSSEMessageRef.current;
+        
+        // Wenn länger als 30 Sekunden keine SSE-Nachricht, hole State manuell
+        if (timeSinceLastMessage > 30000) {
+          console.log('[FALLBACK] ⚠️ Keine SSE-Nachricht seit 30s, hole State manuell');
+          try {
+            const response = await fetch(`/api/room/state?roomId=${roomId}`);
+            if (response.ok) {
+              const data = await response.json();
+              setGameState(data.gameState);
+              if (data.players.player2) {
+                setWaitingForPlayer(false);
+              }
+              console.log('[FALLBACK] ✅ State manuell aktualisiert');
+            }
+          } catch (e) {
+            console.error('[FALLBACK] ❌ Fehler beim manuellen Abrufen:', e);
+          }
+        }
+      }, 5000);
     };
 
     eventSource.onmessage = (event) => {
       try {
+        lastSSEMessageRef.current = Date.now(); // Aktualisiere letzte Nachricht
+        
         const data = JSON.parse(event.data);
         
         if (data.type === 'state') {
@@ -75,21 +107,28 @@ export const useMultiplayerSSE = () => {
 
     eventSource.onerror = (e) => {
       console.error('[SSE] ❌ Verbindungsfehler:', e);
-      setConnectionStatus('error');
-      eventSource.close();
       
-      // Automatischer Reconnect mit exponential backoff
-      const maxAttempts = 5;
-      if (reconnectAttemptsRef.current < maxAttempts) {
-        const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
-        console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${maxAttempts})`);
+      // Prüfe ReadyState um zu sehen ob Verbindung wirklich tot ist
+      if (eventSource.readyState === EventSource.CLOSED) {
+        console.log('[SSE] Verbindung endgültig geschlossen, reconnecte...');
+        setConnectionStatus('error');
         
-        reconnectTimeoutRef.current = setTimeout(() => {
-          reconnectAttemptsRef.current++;
-          connectSSE(roomId);
-        }, delay);
-      } else {
-        setError('Verbindung verloren. Bitte neu laden.');
+        // Automatischer Reconnect mit exponential backoff
+        const maxAttempts = 10; // Erhöht von 5 auf 10
+        if (reconnectAttemptsRef.current < maxAttempts) {
+          const delay = Math.min(1000 * Math.pow(2, reconnectAttemptsRef.current), 10000);
+          console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${maxAttempts})`);
+          
+          reconnectTimeoutRef.current = setTimeout(() => {
+            reconnectAttemptsRef.current++;
+            connectSSE(roomId);
+          }, delay);
+        } else {
+          setError('Verbindung verloren. Bitte Seite neu laden.');
+        }
+      } else if (eventSource.readyState === EventSource.CONNECTING) {
+        console.log('[SSE] ⏳ Verbindung wird hergestellt...');
+        setConnectionStatus('connecting');
       }
     };
   }, []);
@@ -167,7 +206,10 @@ export const useMultiplayerSSE = () => {
 
   // Aktualisiere Spielzustand (optimistisch + Request-Deduplizierung)
   const updateGameState = useCallback(async (newState: GameState) => {
-    if (!playerInfo) return false;
+    if (!playerInfo) {
+      console.error('[UPDATE] ❌ Kein playerInfo vorhanden');
+      return false;
+    }
 
     // Verhindere doppelte Requests
     if (updateInProgressRef.current) {
@@ -207,6 +249,14 @@ export const useMultiplayerSSE = () => {
         console.error('[UPDATE] ❌ Fehler, Rollback zum vorherigen State');
         setGameState(previousState);
         pendingStateRef.current = null;
+        updateInProgressRef.current = false;
+        
+        // Versuche SSE-Verbindung wiederherzustellen
+        if (connectionStatus !== 'connected') {
+          console.log('[UPDATE] SSE nicht verbunden, versuche Reconnect');
+          connectSSE(playerInfo.roomId);
+        }
+        
         throw new Error('Fehler beim Aktualisieren');
       }
       
@@ -214,10 +264,17 @@ export const useMultiplayerSSE = () => {
       return true;
     } catch (err) {
       updateInProgressRef.current = false;
-      setError('Fehler beim Aktualisieren des Spielstands');
+      setError('Fehler beim Aktualisieren. Versuche Verbindung wiederherzustellen...');
+      
+      // Versuche SSE-Verbindung wiederherzustellen bei Netzwerkfehlern
+      if (connectionStatus !== 'connected' && playerInfo) {
+        console.log('[UPDATE] Netzwerkfehler, starte Reconnect');
+        setTimeout(() => connectSSE(playerInfo.roomId), 1000);
+      }
+      
       return false;
     }
-  }, [playerInfo, gameState]);
+  }, [playerInfo, gameState, connectionStatus, connectSSE]);
 
   // Verlasse Raum
   const leaveRoom = useCallback(() => {
@@ -233,6 +290,12 @@ export const useMultiplayerSSE = () => {
     if (reconnectTimeoutRef.current) {
       clearTimeout(reconnectTimeoutRef.current);
       reconnectTimeoutRef.current = null;
+    }
+    
+    // Lösche Fallback Polling
+    if (fallbackPollingRef.current) {
+      clearInterval(fallbackPollingRef.current);
+      fallbackPollingRef.current = null;
     }
     
     setPlayerInfo(null);
@@ -281,6 +344,9 @@ export const useMultiplayerSSE = () => {
       }
       if (reconnectTimeoutRef.current) {
         clearTimeout(reconnectTimeoutRef.current);
+      }
+      if (fallbackPollingRef.current) {
+        clearInterval(fallbackPollingRef.current);
       }
     };
   }, []);
