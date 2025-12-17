@@ -57,19 +57,19 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
           <p className="text-sm text-gray-600 mb-4">
             Gib den 4-stelligen Raumcode ein
           </p>
-          <div className="flex gap-2">
+          <div className="flex flex-col gap-3">
             <input
               type="text"
               value={roomId}
               onChange={(e) => setRoomId(e.target.value.toUpperCase())}
               placeholder="ABCD"
               maxLength={4}
-              className="flex-1 px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 uppercase text-center text-xl font-bold"
+              className="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:outline-none focus:border-green-500 uppercase text-center text-xl font-bold"
             />
             <button
               onClick={handleJoinRoom}
               disabled={roomId.length !== 4}
-              className="px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-6 py-3 bg-green-600 text-white font-bold rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Beitreten
             </button>
