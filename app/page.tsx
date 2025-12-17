@@ -9,6 +9,7 @@ import { GameInfo } from '@/components/GameInfo';
 import { MultiplayerLobby } from '@/components/MultiplayerLobby';
 import { RoomInfo } from '@/components/RoomInfo';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { WinnerModal } from '@/components/WinnerModal';
 import { useMultiplayerSSE } from '@/hooks/useMultiplayerSSE';
 
 type GameMode = 'lobby' | 'local' | 'online';
@@ -205,6 +206,15 @@ export default function Home() {
 
   return (
     <main className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 py-8 px-4">
+      {/* Gewinner Modal */}
+      {gameState.winner !== null && (
+        <WinnerModal
+          winner={gameState.winner}
+          onRestart={handleRestart}
+          onBackToLobby={gameMode === 'local' ? handleBackToLobby : undefined}
+        />
+      )}
+      
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
