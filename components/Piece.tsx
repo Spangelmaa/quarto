@@ -17,7 +17,11 @@ export const Piece: React.FC<PieceProps> = ({ piece, onClick, size = 'medium', s
     large: 'w-16 h-16 sm:w-20 sm:h-20'
   };
   
-  const heightClasses = height === 'tall' ? 'h-12 sm:h-16' : 'h-8 sm:h-12';
+  // Kombinierte Lösung: Höhe + Breite + Schatten für maximalen Unterschied
+  const heightClasses = height === 'tall' 
+    ? 'h-12 sm:h-16 w-11/12 shadow-lg' 
+    : 'h-6 sm:h-9 w-3/4 shadow-sm';
+  
   const colorClasses = color === 'light' ? 'bg-amber-600 border-amber-800' : 'bg-gray-700 border-gray-900';
   const shapeClasses = shape === 'round' ? 'rounded-full' : 'rounded-md';
   
