@@ -1,14 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom, setRoom } from '@/lib/fileStorage';
+import { roomStorage } from '@/lib/roomStorage';
 
 export async function POST(request: NextRequest) {
   try {
     const { roomId, playerId } = await request.json();
     const upperRoomId = roomId.toUpperCase();
     
-    console.log(`[JOIN] 🔍 Suche Raum: ${upperRoomId}`);
+    console.log(`[JOIN] 🔍 Suche Raum: ${upperRoomId}, Verfügbare: [${roomStorage.getAllRoomIds().join(', ')}]`);
     
-    const room = await getRoom(upperRoomId);
+    const room = roomStorage.getRoom(upperRoomId);
     
     if (!room) {
       console.log(`[JOIN] ❌ Raum nicht gefunden: ${upperRoomId}`);
@@ -21,7 +21,7 @@ export async function POST(request: NextRequest) {
     }
     
     room.players.player2 = playerId;
-    await setRoom(upperRoomId, room);
+    roomStorage.setRoom(upperRoomId, room);
     
     console.log(`[JOIN] ✅ Spieler 2 beigetreten: ${playerId} in Raum ${upperRoomId}`);
     

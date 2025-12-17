@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { createInitialGameState } from '@/utils/gameLogic';
 import { Room } from '@/types/multiplayer';
-import { setRoom, getRoomCount } from '@/lib/fileStorage';
+import { roomStorage } from '@/lib/roomStorage';
 
 export async function POST(request: NextRequest) {
   try {
@@ -20,10 +20,9 @@ export async function POST(request: NextRequest) {
       createdAt: Date.now(),
     };
     
-    await setRoom(roomId, room);
+    roomStorage.setRoom(roomId, room);
     
-    const roomCount = await getRoomCount();
-    console.log(`[CREATE] ✅ Raum erstellt: ${roomId}, Spieler1: ${playerId}, Gesamt: ${roomCount} Räume`);
+    console.log(`[CREATE] ✅ Raum erstellt: ${roomId}, Spieler1: ${playerId}`);
     
     return NextResponse.json({ 
       roomId, 

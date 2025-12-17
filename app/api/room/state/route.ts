@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getRoom, setRoom } from '@/lib/fileStorage';
+import { roomStorage } from '@/lib/roomStorage';
 
 export async function GET(request: NextRequest) {
   try {
@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
     }
     
     const upperRoomId = roomId.toUpperCase();
-    const room = await getRoom(upperRoomId);
+    const room = roomStorage.getRoom(upperRoomId);
     
     if (!room) {
       console.log(`[STATE GET] ❌ Raum nicht gefunden: ${upperRoomId}`);
@@ -38,7 +38,7 @@ export async function POST(request: NextRequest) {
       selectedPiece: gameState.selectedPiece?.id
     });
     
-    const room = await getRoom(upperRoomId);
+    const room = roomStorage.getRoom(upperRoomId);
     
     if (!room) {
       console.log(`[STATE UPDATE] ❌ Raum nicht gefunden: ${upperRoomId}`);
@@ -52,7 +52,7 @@ export async function POST(request: NextRequest) {
     }
     
     room.gameState = gameState;
-    await setRoom(upperRoomId, room);
+    roomStorage.setRoom(upperRoomId, room);
     
     console.log(`[STATE UPDATE] ✅ Zustand gespeichert für Raum ${upperRoomId}`);
     
