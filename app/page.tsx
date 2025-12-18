@@ -189,21 +189,14 @@ export default function Home() {
   // Zeige Lobby
   if (gameMode === 'lobby') {
     return (
-      <main className="min-h-screen animated-gradient py-8 px-4 flex items-center justify-center relative overflow-hidden">
-        {/* Dekorative Elemente */}
-        <div className="absolute top-20 left-20 w-72 h-72 bg-purple-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-        <div className="absolute top-40 right-20 w-72 h-72 bg-yellow-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-        <div className="absolute -bottom-8 left-40 w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-        
-        <div className="relative z-10">
-          <MultiplayerLobby
-            onCreateRoom={handleCreateRoom}
-            onJoinRoom={handleJoinRoom}
-            onPlayLocal={handlePlayLocal}
-            error={error}
-            isCreating={isCreating}
-          />
-        </div>
+      <main className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 py-8 px-4 flex items-center justify-center">
+        <MultiplayerLobby
+          onCreateRoom={handleCreateRoom}
+          onJoinRoom={handleJoinRoom}
+          onPlayLocal={handlePlayLocal}
+          error={error}
+          isCreating={isCreating}
+        />
       </main>
     );
   }
@@ -213,12 +206,7 @@ export default function Home() {
     (playerInfo !== null && gameState.currentPlayer === playerInfo.playerNumber);
 
   return (
-    <main className="min-h-screen animated-gradient py-8 px-4 relative overflow-hidden">
-      {/* Dekorative Hintergrund-Elemente */}
-      <div className="absolute top-0 left-0 w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-      <div className="absolute top-0 right-0 w-96 h-96 bg-yellow-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-      <div className="absolute bottom-0 left-1/2 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
-      
+    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 py-8 px-4">
       {/* Gewinner Modal */}
       {gameState.winner !== null && (
         <WinnerModal
@@ -229,10 +217,10 @@ export default function Home() {
         />
       )}
       
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="flex items-center justify-between mb-8">
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-5xl md:text-6xl font-extrabold text-white drop-shadow-lg float-animation">
+            <h1 className="text-4xl md:text-5xl font-bold text-slate-800">
               🎲 Quarto
             </h1>
             {gameMode === 'online' && (
@@ -242,7 +230,7 @@ export default function Home() {
           {gameMode === 'local' && (
             <button
               onClick={handleBackToLobby}
-              className="px-6 py-3 bg-white/20 backdrop-blur-md text-white font-bold rounded-xl hover:bg-white/30 transition-all transform hover:scale-105 border border-white/30 shadow-lg"
+              className="px-5 py-2 bg-slate-600 text-white font-semibold rounded-lg hover:bg-slate-700 transition-colors"
             >
               ← Zurück zur Lobby
             </button>
@@ -272,9 +260,9 @@ export default function Home() {
 
           {/* Zeige Hinweis wenn nicht am Zug */}
           {gameMode === 'online' && !waitingForPlayer && !isMyTurn && gameState.winner === null && (
-            <div className="mb-6 p-5 bg-gradient-to-r from-blue-500/20 to-purple-500/20 backdrop-blur-sm border-2 border-blue-400/50 rounded-2xl text-center shadow-lg">
-              <div className="text-white font-bold text-lg drop-shadow-md flex items-center justify-center gap-3">
-                <span className="animate-pulse text-2xl">⏳</span>
+            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
+              <div className="text-blue-800 font-semibold flex items-center justify-center gap-2">
+                <span>⏳</span>
                 <span>Warte auf Spieler {gameState.currentPlayer}</span>
               </div>
             </div>
@@ -306,32 +294,14 @@ export default function Home() {
             }
           />
 
-          <div className="mt-8 p-6 bg-gradient-to-br from-amber-100/80 to-orange-100/80 backdrop-blur-sm rounded-2xl shadow-lg border border-amber-200/50">
-            <h3 className="font-bold mb-3 text-lg text-amber-900 flex items-center gap-2">
-              <span className="text-2xl">📖</span>
-              Spielregeln
-            </h3>
-            <ul className="space-y-2 text-sm text-gray-800">
-              <li className="flex items-start gap-2">
-                <span className="text-amber-600 font-bold">•</span>
-                <span>Jeder Spielstein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-amber-600 font-bold">•</span>
-                <span>Spieler 1 wählt einen Stein, den Spieler 2 platzieren muss</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-amber-600 font-bold">•</span>
-                <span>Dann wählt Spieler 2 einen Stein für Spieler 1</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-amber-600 font-bold">•</span>
-                <span>Gewinner: Wer als Erster 4 Steine mit einer gemeinsamen Eigenschaft in einer Reihe hat</span>
-              </li>
-              <li className="flex items-start gap-2">
-                <span className="text-amber-600 font-bold">•</span>
-                <span>Dies kann horizontal, vertikal oder diagonal sein</span>
-              </li>
+          <div className="mt-8 p-5 bg-amber-50 rounded-lg border border-amber-200">
+            <h3 className="font-bold mb-2 text-amber-900">📖 Spielregeln</h3>
+            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+              <li>Jeder Spielstein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</li>
+              <li>Spieler 1 wählt einen Stein, den Spieler 2 platzieren muss</li>
+              <li>Dann wählt Spieler 2 einen Stein für Spieler 1</li>
+              <li>Gewinner: Wer als Erster 4 Steine mit einer gemeinsamen Eigenschaft in einer Reihe hat</li>
+              <li>Dies kann horizontal, vertikal oder diagonal sein</li>
             </ul>
           </div>
         </div>

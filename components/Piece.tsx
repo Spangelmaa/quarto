@@ -12,54 +12,44 @@ export const Piece: React.FC<PieceProps> = ({ piece, onClick, size = 'medium', s
   const { color, height, shape, top } = piece.attributes;
   
   const sizeClasses = {
-    small: 'w-12 h-12 sm:w-14 sm:h-14',
-    medium: 'w-14 h-14 sm:w-18 sm:h-18',
-    large: 'w-18 h-18 sm:w-22 sm:h-22'
+    small: 'w-10 h-10 sm:w-12 sm:h-12',
+    medium: 'w-12 h-12 sm:w-16 sm:h-16',
+    large: 'w-16 h-16 sm:w-20 sm:h-20'
   };
   
-  // Kombinierte Lösung: Höhe + Schatten mit 3D-Effekt
+  // Höhe bestimmt die tatsächliche Größe des Steins
   const heightClasses = height === 'tall' 
-    ? 'h-14 sm:h-18 shadow-2xl' 
-    : 'h-10 sm:h-14 shadow-lg';
+    ? 'h-12 sm:h-16 shadow-lg' 
+    : 'h-9 sm:h-12 shadow-md';
   
   // Breite = Höhe für perfekte Quadrate/Kreise
   const widthClasses = height === 'tall'
-    ? 'w-14 sm:w-18'
-    : 'w-10 sm:w-14';
+    ? 'w-12 sm:w-16'
+    : 'w-9 sm:w-12';
   
-  // Moderne Farbverläufe mit Glassmorphismus
+  // Einfache Farben ohne Gradienten
   const colorClasses = color === 'light' 
-    ? 'bg-gradient-to-br from-amber-400 via-amber-500 to-amber-600 border-amber-700' 
-    : 'bg-gradient-to-br from-gray-700 via-gray-800 to-gray-900 border-gray-950';
+    ? 'bg-amber-600 border-amber-800' 
+    : 'bg-gray-700 border-gray-900';
   
-  // Eckige Steine: leichte Abrundung, Runde: volle Abrundung
-  const shapeClasses = shape === 'round' ? 'rounded-full' : 'rounded-lg';
+  // Form: Runde sind perfekt rund, eckige haben keine Abrundung
+  const shapeClasses = shape === 'round' ? 'rounded-full' : 'rounded-none';
   
   return (
     <div
-      className={`${sizeClasses[size]} flex items-center justify-center cursor-pointer transition-all active:scale-95 hover:scale-110 ${
-        selected ? 'ring-4 ring-blue-500 ring-offset-2 ring-offset-white/50' : ''
+      className={`${sizeClasses[size]} flex items-center justify-center cursor-pointer transition-all active:scale-95 sm:hover:scale-105 ${
+        selected ? 'ring-2 sm:ring-4 ring-blue-500' : ''
       }`}
       onClick={onClick}
     >
       <div
-        className={`${widthClasses} ${heightClasses} ${colorClasses} ${shapeClasses} border-3 flex items-center justify-center transition-all hover:brightness-110 relative`}
-        style={{
-          boxShadow: color === 'light' 
-            ? '0 4px 14px rgba(251, 191, 36, 0.4), inset 0 -2px 8px rgba(0, 0, 0, 0.2)'
-            : '0 4px 14px rgba(0, 0, 0, 0.6), inset 0 -2px 8px rgba(255, 255, 255, 0.1)'
-        }}
+        className={`${widthClasses} ${heightClasses} ${colorClasses} ${shapeClasses} border-2 sm:border-4 flex items-center justify-center transition-transform`}
       >
-        {/* Glanz-Effekt oben */}
-        <div className={`absolute top-1 left-1/4 right-1/4 h-2 bg-white/30 ${shape === 'round' ? 'rounded-full' : 'rounded-sm'} blur-sm`}></div>
-        
         {top === 'hollow' && (
           <div 
-            className={`w-4 h-4 sm:w-5 sm:h-5 ${
-              color === 'light' ? 'bg-white shadow-inner' : 'bg-gray-950 shadow-inner'
-            } ${shape === 'round' ? 'rounded-full' : 'rounded-md'} border ${
-              color === 'light' ? 'border-amber-700' : 'border-gray-700'
-            }`} 
+            className={`w-3 h-3 sm:w-4 sm:h-4 ${
+              color === 'light' ? 'bg-white' : 'bg-gray-900'
+            } ${shape === 'round' ? 'rounded-full' : 'rounded-sm'}`} 
           />
         )}
       </div>
