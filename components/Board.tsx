@@ -10,14 +10,14 @@ type BoardProps = {
 
 export const Board: React.FC<BoardProps> = ({ board, onCellClick, canPlacePiece }) => {
   return (
-    <div className="grid grid-cols-4 gap-2 sm:gap-3 bg-amber-800 p-3 sm:p-4 rounded-lg shadow-xl">
+    <div className="grid grid-cols-4 gap-2 sm:gap-3 bg-gradient-to-br from-amber-800 to-amber-900 p-4 sm:p-5 rounded-xl shadow-xl">
       {board.map((row, rowIndex) =>
         row.map((cell, colIndex) => (
           <div
             key={`${rowIndex}-${colIndex}`}
-            className={`w-16 h-16 sm:w-20 sm:h-20 bg-amber-50 rounded-md flex items-center justify-center border-2 border-amber-600 transition-all ${
+            className={`w-16 h-16 sm:w-20 sm:h-20 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg flex items-center justify-center border-2 border-amber-700/30 shadow-sm transition-all ${
               canPlacePiece && cell === null 
-                ? 'hover:bg-amber-100 cursor-pointer hover:border-amber-700' 
+                ? 'hover:from-amber-100 hover:to-amber-200 cursor-pointer hover:border-amber-600 hover:shadow-md' 
                 : ''
             }`}
             onClick={() => canPlacePiece && cell === null && onCellClick(rowIndex, colIndex)}

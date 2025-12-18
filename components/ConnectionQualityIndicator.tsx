@@ -31,11 +31,11 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
 
   const getQualityColor = (q: ConnectionQuality): string => {
     switch (q) {
-      case 'excellent': return 'bg-green-500';
-      case 'good': return 'bg-green-400';
-      case 'fair': return 'bg-yellow-400';
+      case 'excellent': return 'bg-emerald-500';
+      case 'good': return 'bg-emerald-400';
+      case 'fair': return 'bg-amber-400';
       case 'poor': return 'bg-orange-500';
-      case 'offline': return 'bg-red-500';
+      case 'offline': return 'bg-rose-500';
     }
   };
 
@@ -61,7 +61,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-slate-200 shadow-sm" title={`Verbindung: ${getQualityText(quality)}`}>
+      <div className="flex items-center gap-1 px-2 py-1 bg-white/90 rounded-lg border border-indigo-200 shadow-sm" title={`Verbindung: ${getQualityText(quality)}`}>
         <div className="flex gap-0.5">
           {[1, 2, 3, 4].map((bar) => (
             <div
@@ -74,7 +74,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
                 (quality === 'fair' && bar <= 2) ||
                 (quality === 'poor' && bar <= 1)
                   ? getQualityColor(quality)
-                  : 'bg-gray-300'
+                  : 'bg-slate-300'
               }`}
             />
           ))}
@@ -84,7 +84,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
   }
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-lg shadow-sm border border-slate-200">
+    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white/90 rounded-lg shadow-sm border border-indigo-200">
       <span className="text-sm">{getQualityIcon(quality)}</span>
       <div className="flex gap-0.5">
         {[1, 2, 3, 4].map((bar) => (
@@ -98,12 +98,12 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
               (quality === 'fair' && bar <= 2) ||
               (quality === 'poor' && bar <= 1)
                 ? getQualityColor(quality)
-                : 'bg-gray-300'
+                : 'bg-slate-300'
             }`}
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-slate-700">
+      <span className="text-xs font-medium text-indigo-900">
         {getQualityText(quality)}
       </span>
     </div>

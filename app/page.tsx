@@ -189,7 +189,7 @@ export default function Home() {
   // Zeige Lobby
   if (gameMode === 'lobby') {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 py-8 px-4 flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4 flex items-center justify-center">
         <MultiplayerLobby
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
@@ -206,7 +206,7 @@ export default function Home() {
     (playerInfo !== null && gameState.currentPlayer === playerInfo.playerNumber);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-slate-100 via-blue-50 to-slate-100 py-8 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 py-8 px-4">
       {/* Gewinner Modal */}
       {gameState.winner !== null && (
         <WinnerModal
@@ -220,7 +220,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl md:text-5xl font-bold text-slate-800">
+            <h1 className="text-4xl md:text-5xl font-bold text-indigo-900">
               🎲 Quarto
             </h1>
             {gameMode === 'online' && (
@@ -230,14 +230,14 @@ export default function Home() {
           {gameMode === 'local' && (
             <button
               onClick={handleBackToLobby}
-              className="px-5 py-2 bg-slate-600 text-white font-semibold rounded-lg hover:bg-slate-700 transition-colors"
+              className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-sm"
             >
               ← Zurück zur Lobby
             </button>
           )}
         </div>
 
-        <div className="glass rounded-2xl shadow-2xl p-6 md:p-10 border border-white/20">
+        <div className="glass rounded-2xl shadow-xl p-6 md:p-10">
           {/* Room Info für Online-Spiele */}
           {gameMode === 'online' && playerInfo && (
             <RoomInfo
@@ -260,8 +260,8 @@ export default function Home() {
 
           {/* Zeige Hinweis wenn nicht am Zug */}
           {gameMode === 'online' && !waitingForPlayer && !isMyTurn && gameState.winner === null && (
-            <div className="mb-6 p-4 bg-blue-50 border border-blue-200 rounded-lg text-center">
-              <div className="text-blue-800 font-semibold flex items-center justify-center gap-2">
+            <div className="mb-6 p-4 bg-indigo-50 border border-indigo-200 rounded-lg text-center">
+              <div className="text-indigo-800 font-semibold flex items-center justify-center gap-2">
                 <span>⏳</span>
                 <span>Warte auf Spieler {gameState.currentPlayer}</span>
               </div>
@@ -294,9 +294,9 @@ export default function Home() {
             }
           />
 
-          <div className="mt-8 p-5 bg-amber-50 rounded-lg border border-amber-200">
+          <div className="mt-8 p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200">
             <h3 className="font-bold mb-2 text-amber-900">📖 Spielregeln</h3>
-            <ul className="list-disc list-inside space-y-1 text-sm text-gray-700">
+            <ul className="list-disc list-inside space-y-1 text-sm text-amber-800">
               <li>Jeder Spielstein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</li>
               <li>Spieler 1 wählt einen Stein, den Spieler 2 platzieren muss</li>
               <li>Dann wählt Spieler 2 einen Stein für Spieler 1</li>
