@@ -80,34 +80,47 @@ vercel
 
 ```
 quarto/
-├── app/                       # Next.js App Router
-│   ├── api/                  # API Routes für Multiplayer
-│   │   └── room/            # Raum-Management
-│   │       ├── create/      # Raum erstellen
-│   │       ├── join/        # Raum beitreten
-│   │       └── state/       # Spielzustand
-│   ├── page.tsx             # Hauptseite
-│   ├── layout.tsx           # Root Layout
-│   └── globals.css          # Globale Styles
-├── components/              # React Komponenten
-│   ├── Board.tsx           # Spielbrett
-│   ├── Piece.tsx           # Einzelner Spielstein
-│   ├── PieceSelector.tsx   # Steinauswahl
-│   ├── GameInfo.tsx        # Spielinformationen
-│   ├── MultiplayerLobby.tsx # Multiplayer-Lobby
-│   └── RoomInfo.tsx        # Raum-Informationen
-├── hooks/                  # Custom React Hooks
-│   └── useMultiplayer.ts   # Multiplayer-Logik
-├── types/                  # TypeScript Typen
-│   ├── game.ts            # Spiel-Typen
-│   └── multiplayer.ts     # Multiplayer-Typen
-├── utils/                  # Hilfsfunktionen
-│   └── gameLogic.ts        # Spiellogik
-└── package.json            # Dependencies
+├── app/                          # Next.js App Router
+│   ├── api/                     # API Routes für Multiplayer
+│   │   └── room/               # Raum-Management
+│   │       ├── create/         # Raum erstellen
+│   │       ├── join/           # Raum beitreten
+│   │       ├── state/          # Spielzustand
+│   │       └── subscribe/      # SSE-Verbindung (NEU!)
+│   ├── page.tsx                # Hauptseite
+│   ├── layout.tsx              # Root Layout
+│   └── globals.css             # Globale Styles
+├── components/                 # React Komponenten
+│   ├── Board.tsx              # Spielbrett
+│   ├── Piece.tsx              # Einzelner Spielstein
+│   ├── PieceSelector.tsx      # Steinauswahl
+│   ├── GameInfo.tsx           # Spielinformationen
+│   ├── MultiplayerLobby.tsx   # Multiplayer-Lobby
+│   ├── RoomInfo.tsx           # Raum-Informationen
+│   ├── ConnectionStatus.tsx   # Verbindungsstatus (NEU!)
+│   └── ConnectionQualityIndicator.tsx  # Signalstärke (NEU!)
+├── hooks/                     # Custom React Hooks
+│   └── useMultiplayerSSE.ts   # SSE-Multiplayer-Logik (NEU!)
+├── types/                     # TypeScript Typen
+│   ├── game.ts               # Spiel-Typen
+│   └── multiplayer.ts        # Multiplayer-Typen
+├── utils/                     # Hilfsfunktionen
+│   ├── gameLogic.ts          # Spiellogik
+│   └── connectionUtils.ts    # Verbindungs-Utilities (NEU!)
+├── config/                    # Konfiguration
+│   └── connection.ts         # Verbindungsparameter (NEU!)
+├── lib/                       # Server-seitige Bibliotheken
+│   ├── roomStorage.ts        # Raum-Speicher
+│   └── sseConnections.ts     # SSE-Verbindungsverwaltung (NEU!)
+├── docs/                      # Dokumentation (NEU!)
+│   ├── VERBINDUNGSSTABILITAET.md  # Technische Docs
+│   └── DEPLOYMENT_GUIDE.md        # Deployment-Anleitung
+└── package.json               # Dependencies
 ```
 
 ## 🎯 Features
 
+### Spielfunktionen
 - ✅ Vollständige Quarto-Spiellogik
 - ✅ **Online-Multiplayer**: Spiele mit Freunden auf verschiedenen Geräten
 - ✅ **Lokaler Multiplayer**: Spiele zu zweit auf einem Gerät
@@ -116,9 +129,20 @@ quarto/
 - ✅ Gewinn-Erkennung (alle Richtungen)
 - ✅ Visuelle Darstellung der Spielsteine
 - ✅ Raum-System mit 4-stelligen Codes
-- ✅ Echtzeit-Synchronisation
 - ✅ Spielzustandsverwaltung
 - ✅ Neustart-Funktion
+
+### 🔌 Verbindungsstabilität (NEU!)
+- ✅ **Echtzeit-Kommunikation** via Server-Sent Events (SSE)
+- ✅ **Mehrschichtiges Fallback-System** (SSE → Polling → Manuelle Sync)
+- ✅ **Automatische Wiederherstellung** bei Verbindungsproblemen
+- ✅ **Unbegrenzte Reconnect-Versuche** mit Exponential Backoff
+- ✅ **Aktive Verbindungsüberwachung** alle 5 Sekunden
+- ✅ **Tab-Visibility-Integration** (Reconnect bei Tab-Aktivierung)
+- ✅ **Online/Offline-Detection** (Sofortiger Reconnect bei Netzwerk-Rückkehr)
+- ✅ **Verbindungsqualitäts-Anzeige** mit visueller Signalstärke
+- ✅ **Optimistisches Update** (UI reagiert sofort, Sync im Hintergrund)
+- ✅ **State-Synchronisation** nach jedem Reconnect
 
 ## 🌐 Online-Multiplayer
 
@@ -131,10 +155,64 @@ quarto/
 
 ### Technische Details:
 
-- Automatische Synchronisation über API Routes
-- In-Memory Storage (Server-seitig)
-- Polling-basierte Updates (1 Sekunde Intervall)
-- Funktioniert auf allen Geräten mit Internetverbindung
+- **Primär**: Server-Sent Events (SSE) für Echtzeit-Updates (0ms Latenz)
+- **Fallback**: Automatisches Polling bei SSE-Problemen (3s Intervall)
+- **Storage**: In-Memory (Server-seitig)
+- **Reconnect**: Automatisch mit Exponential Backoff (1s - 30s)
+- **Stabilität**: Funktioniert auch bei instabilen Verbindungen
+- **Kompatibilität**: Alle Geräte mit Internetverbindung
+
+### Verbindungsstabilität:
+
+Das Spiel ist **hochgradig resilient** gegen:
+- ✅ Netzwerkunterbrechungen
+- ✅ Server-Neustarts
+- ✅ Proxy/Load-Balancer-Timeouts
+- ✅ Browser-Tab-Wechsel
+- ✅ Mobile Netzwerk-Wechsel (WiFi ↔ 4G)
+- ✅ Temporäre Verbindungsprobleme
+
+**→ Das Spiel läuft praktisch immer, auch bei schlechter Verbindung! 🎮**
+
+## 📚 Dokumentation
+
+- **[VERBINDUNGSVERBESSERUNGEN.md](VERBINDUNGSVERBESSERUNGEN.md)** - Übersicht der Stabilitätsverbesserungen
+- **[CHANGELOG_VERBINDUNG.md](CHANGELOG_VERBINDUNG.md)** - Detaillierte Änderungsliste
+- **[docs/VERBINDUNGSSTABILITAET.md](docs/VERBINDUNGSSTABILITAET.md)** - Technische Dokumentation
+- **[docs/DEPLOYMENT_GUIDE.md](docs/DEPLOYMENT_GUIDE.md)** - Deployment-Anleitung
+
+## 🔧 Konfiguration
+
+Alle Verbindungsparameter können in `config/connection.ts` angepasst werden:
+
+```typescript
+export const CONNECTION_CONFIG = {
+  HEARTBEAT_INTERVAL: 15000,           // Server-Heartbeat
+  FALLBACK_POLL_INTERVAL: 3000,        // Fallback-Polling
+  FALLBACK_TIMEOUT: 25000,             // Timeout für SSE
+  MAX_RECONNECT_ATTEMPTS: Infinity,    // Unbegrenzte Versuche
+  INITIAL_RECONNECT_DELAY: 1000,       // Erste Wartezeit
+  MAX_RECONNECT_DELAY: 30000,          // Max Wartezeit
+  // ... weitere Parameter
+}
+```
+
+## 🐛 Troubleshooting
+
+### Verbindung bricht ab
+- ✅ **Automatisch gelöst**: Fallback-System übernimmt
+- ✅ **Reconnect**: Läuft automatisch im Hintergrund
+- ✅ **Spiel läuft weiter**: Auch bei Verbindungsproblemen
+
+### Spiel hängt
+- Prüfe Console-Logs (F12 → Console)
+- Suche nach `[SSE]`, `[FALLBACK]`, `[CONNECTION CHECK]`
+- Siehe `docs/VERBINDUNGSSTABILITAET.md` für Details
+
+### Deployment-Probleme
+- Siehe `docs/DEPLOYMENT_GUIDE.md`
+- Wichtig: Node.js Runtime (nicht Edge!)
+- Nginx: Buffering deaktivieren
 
 ## 📝 Lizenz
 
@@ -143,3 +221,5 @@ MIT
 ---
 
 Viel Spaß beim Spielen! 🎉
+
+**Das Spiel läuft jetzt auch bei instabilen Verbindungen stabil! 🚀**

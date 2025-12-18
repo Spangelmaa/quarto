@@ -4,9 +4,10 @@ type WinnerModalProps = {
   winner: number; // 1, 2, oder 0 für Unentschieden
   onRestart: () => void;
   onBackToLobby?: () => void;
+  currentPlayerNumber?: number; // Für Online-Modus: Welcher Spieler bin ich?
 };
 
-export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onBackToLobby }) => {
+export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onBackToLobby, currentPlayerNumber }) => {
   const [show, setShow] = useState(false);
 
   useEffect(() => {
@@ -15,11 +16,13 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onB
   }, []);
 
   const isDraw = winner === 0;
+  const isWinner = currentPlayerNumber !== undefined && winner === currentPlayerNumber;
+  const isLoser = currentPlayerNumber !== undefined && !isDraw && !isWinner;
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm">
-      {/* Feuerwerk Animation */}
-      {!isDraw && (
+      {/* Feuerwerk Animation nur für Gewinner */}
+      {isWinner && (
         <>
           <div className="firework"></div>
           <div className="firework"></div>
@@ -33,10 +36,15 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onB
           show ? 'scale-100 opacity-100' : 'scale-50 opacity-0'
         }`}
       >
-        {/* Konfetti Emoji für Gewinner */}
-        {!isDraw && (
+        {/* Emoji oben */}
+        {isWinner && (
           <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-6xl animate-bounce">
             🎉
+          </div>
+        )}
+        {isLoser && (
+          <div className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-6xl animate-bounce">
+            😢
           </div>
         )}
 
@@ -51,6 +59,24 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onB
                 Das Spiel endet unentschieden
               </p>
             </>
+          ) : isWinner ? (
+            <>
+              <h2 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2 animate-pulse">
+                Du gewinnst!
+              </h2>
+              <p className="text-xl text-gray-600">
+                🏆 Herzlichen Glückwunsch! 🏆
+              </p>
+            </>
+          ) : isLoser ? (
+            <>
+              <h2 className="text-5xl font-bold bg-gradient-to-r from-gray-500 via-gray-600 to-gray-700 bg-clip-text text-transparent mb-2">
+                Du hast verloren
+              </h2>
+              <p className="text-xl text-gray-600">
+                Spieler {winner} hat gewonnen
+              </p>
+            </>
           ) : (
             <>
               <h2 className="text-5xl font-bold bg-gradient-to-r from-yellow-400 via-orange-500 to-red-500 bg-clip-text text-transparent mb-2 animate-pulse">
@@ -63,8 +89,22 @@ export const WinnerModal: React.FC<WinnerModalProps> = ({ winner, onRestart, onB
           )}
         </div>
 
-        {/* Trophäe Animation */}
-        {!isDraw && (
+        {/* Icon Animation */}
+        {isWinner && (
+          <div className="flex justify-center mb-8 w-full pl-32">
+            <div className="text-9xl animate-bounce">
+              🏆
+            </div>
+          </div>
+        )}
+        {isLoser && (
+          <div className="flex justify-center mb-8 w-full">
+            <div className="text-9xl animate-pulse">
+              💔
+            </div>
+          </div>
+        )}
+        {!isDraw && !isWinner && !isLoser && (
           <div className="flex justify-center mb-8 w-full pl-32">
             <div className="text-9xl animate-bounce">
               🏆

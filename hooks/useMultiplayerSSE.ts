@@ -21,6 +21,8 @@ export const useMultiplayerSSE = () => {
   const fallbackPollingRef = useRef<NodeJS.Timeout | null>(null);
   const lastSSEMessageRef = useRef<number>(Date.now());
   const visibilityCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const connectionCheckRef = useRef<NodeJS.Timeout | null>(null);
+  const isReconnectingRef = useRef(false);
 
   // Generiere eindeutige Player ID
   const getPlayerId = useCallback(() => {
@@ -34,9 +36,28 @@ export const useMultiplayerSSE = () => {
 
   // SSE Verbindung herstellen
   const connectSSE = useCallback((roomId: string) => {
+    // Verhindere mehrfache gleichzeitige Reconnects
+    if (isReconnectingRef.current) {
+      console.log('[SSE] ⏭️ Reconnect bereits in Bearbeitung, überspringe');
+      return;
+    }
+    
+    isReconnectingRef.current = true;
+    
     // Schließe bestehende Verbindung
     if (eventSourceRef.current) {
-      eventSourceRef.current.close();
+      try {
+        eventSourceRef.current.close();
+      } catch (e) {
+        console.error('[SSE] Fehler beim Schließen der alten Verbindung:', e);
+      }
+      eventSourceRef.current = null;
+    }
+    
+    // Lösche alte Timeouts
+    if (connectionCheckRef.current) {
+      clearInterval(connectionCheckRef.current);
+      connectionCheckRef.current = null;
     }
 
     console.log('[SSE] 🔌 Verbinde zu Raum:', roomId);
@@ -50,9 +71,22 @@ export const useMultiplayerSSE = () => {
       setConnectionStatus('connected');
       reconnectAttemptsRef.current = 0;
       lastSSEMessageRef.current = Date.now();
+      isReconnectingRef.current = false;
       setError(null);
       
-      // Starte Fallback-Polling als Sicherheit (alle 5 Sekunden prüfen)
+      // Lade aktuellen State nach Reconnect zur Synchronisation
+      fetch(`/api/room/state?roomId=${roomId}`)
+        .then(res => res.json())
+        .then(data => {
+          console.log('[SSE] 🔄 State nach Verbindung synchronisiert');
+          setGameState(data.gameState);
+          if (data.players.player2) {
+            setWaitingForPlayer(false);
+          }
+        })
+        .catch(e => console.error('[SSE] Fehler beim Laden des States:', e));
+      
+      // Starte Fallback-Polling als Sicherheit
       if (fallbackPollingRef.current) {
         clearInterval(fallbackPollingRef.current);
       }
@@ -62,7 +96,7 @@ export const useMultiplayerSSE = () => {
         
         // Wenn länger als konfiguriert keine SSE-Nachricht, hole State manuell
         if (timeSinceLastMessage > CONNECTION_CONFIG.FALLBACK_TIMEOUT) {
-          console.log(`[FALLBACK] ⚠️ Keine SSE-Nachricht seit ${CONNECTION_CONFIG.FALLBACK_TIMEOUT}ms, hole State manuell`);
+          console.log(`[FALLBACK] ⚠️ Keine SSE-Nachricht seit ${Math.round(timeSinceLastMessage/1000)}s, hole State manuell`);
           try {
             const response = await fetch(`/api/room/state?roomId=${roomId}`);
             if (response.ok) {
@@ -77,6 +111,7 @@ export const useMultiplayerSSE = () => {
               // Wenn SSE tot ist, versuche Reconnect
               if (eventSourceRef.current?.readyState === EventSource.CLOSED) {
                 console.log('[FALLBACK] SSE ist tot, starte Reconnect');
+                isReconnectingRef.current = false;
                 connectSSE(roomId);
               }
             }
@@ -85,6 +120,32 @@ export const useMultiplayerSSE = () => {
           }
         }
       }, CONNECTION_CONFIG.FALLBACK_POLL_INTERVAL);
+      
+      // Aktive Verbindungsprüfung
+      if (connectionCheckRef.current) {
+        clearInterval(connectionCheckRef.current);
+      }
+      
+      connectionCheckRef.current = setInterval(() => {
+        if (eventSourceRef.current) {
+          const readyState = eventSourceRef.current.readyState;
+          const timeSinceLastMessage = Date.now() - lastSSEMessageRef.current;
+          
+          console.log('[CONNECTION CHECK]', {
+            readyState: readyState === EventSource.CONNECTING ? 'CONNECTING' : 
+                       readyState === EventSource.OPEN ? 'OPEN' : 'CLOSED',
+            timeSinceLastMessage: Math.round(timeSinceLastMessage/1000) + 's'
+          });
+          
+          // Wenn Verbindung geschlossen oder zu lange keine Nachricht
+          if (readyState === EventSource.CLOSED || 
+              (readyState === EventSource.CONNECTING && timeSinceLastMessage > CONNECTION_CONFIG.CONNECTION_TIMEOUT)) {
+            console.log('[CONNECTION CHECK] ❌ Verbindung tot, starte Reconnect');
+            isReconnectingRef.current = false;
+            connectSSE(roomId);
+          }
+        }
+      }, CONNECTION_CONFIG.CONNECTION_CHECK_INTERVAL);
     };
 
     eventSource.onmessage = (event) => {
@@ -124,6 +185,7 @@ export const useMultiplayerSSE = () => {
 
     eventSource.onerror = (e) => {
       console.error('[SSE] ❌ Verbindungsfehler:', e);
+      isReconnectingRef.current = false;
       
       // Prüfe ReadyState um zu sehen ob Verbindung wirklich tot ist
       if (eventSource.readyState === EventSource.CLOSED) {
@@ -133,26 +195,29 @@ export const useMultiplayerSSE = () => {
         // Zeige weiter "connected" solange Fallback funktioniert
         
         // Automatischer Reconnect mit exponential backoff
-        if (reconnectAttemptsRef.current < CONNECTION_CONFIG.MAX_RECONNECT_ATTEMPTS) {
-          const delay = Math.min(
-            CONNECTION_CONFIG.INITIAL_RECONNECT_DELAY * Math.pow(CONNECTION_CONFIG.BACKOFF_FACTOR, reconnectAttemptsRef.current),
-            CONNECTION_CONFIG.MAX_RECONNECT_DELAY
-          );
-          console.log(`[SSE] 🔄 Reconnect in ${delay}ms (Versuch ${reconnectAttemptsRef.current + 1}/${CONNECTION_CONFIG.MAX_RECONNECT_ATTEMPTS})`);
-          
-          // Zeige Fehler erst nach vielen Versuchen (Fallback läuft ja)
-          if (reconnectAttemptsRef.current > 5) {
-            setConnectionStatus('error');
-          }
-          
-          reconnectTimeoutRef.current = setTimeout(() => {
-            reconnectAttemptsRef.current++;
-            connectSSE(roomId);
-          }, delay);
-        } else {
+        const delay = Math.min(
+          CONNECTION_CONFIG.INITIAL_RECONNECT_DELAY * Math.pow(CONNECTION_CONFIG.BACKOFF_FACTOR, reconnectAttemptsRef.current),
+          CONNECTION_CONFIG.MAX_RECONNECT_DELAY
+        );
+        
+        const attemptNum = reconnectAttemptsRef.current + 1;
+        const maxAttempts = CONNECTION_CONFIG.MAX_RECONNECT_ATTEMPTS === Infinity ? '∞' : CONNECTION_CONFIG.MAX_RECONNECT_ATTEMPTS;
+        console.log(`[SSE] 🔄 Reconnect in ${Math.round(delay/1000)}s (Versuch ${attemptNum}/${maxAttempts})`);
+        
+        // Zeige Warnung nach mehreren Versuchen (aber versuche weiter)
+        if (reconnectAttemptsRef.current > 3) {
           setConnectionStatus('error');
-          setError('SSE instabil. Spiel läuft im Fallback-Polling-Modus weiter.');
+          setError(`Verbindung instabil. Versuche Reconnect... (${attemptNum})`);
         }
+        
+        if (reconnectTimeoutRef.current) {
+          clearTimeout(reconnectTimeoutRef.current);
+        }
+        
+        reconnectTimeoutRef.current = setTimeout(() => {
+          reconnectAttemptsRef.current++;
+          connectSSE(roomId);
+        }, delay);
       } else if (eventSource.readyState === EventSource.CONNECTING) {
         console.log('[SSE] ⏳ Verbindung wird hergestellt...');
         // Zeige nur bei erstem Versuch "connecting"
@@ -328,12 +393,19 @@ export const useMultiplayerSSE = () => {
       fallbackPollingRef.current = null;
     }
     
+    // Lösche Connection Check
+    if (connectionCheckRef.current) {
+      clearInterval(connectionCheckRef.current);
+      connectionCheckRef.current = null;
+    }
+    
     setPlayerInfo(null);
     setGameState(null);
     setConnectionStatus('disconnected');
     setError(null);
     setWaitingForPlayer(false);
     reconnectAttemptsRef.current = 0;
+    isReconnectingRef.current = false;
     localStorage.removeItem('playerInfo');
   }, []);
 
@@ -419,6 +491,9 @@ export const useMultiplayerSSE = () => {
       }
       if (visibilityCheckRef.current) {
         clearTimeout(visibilityCheckRef.current);
+      }
+      if (connectionCheckRef.current) {
+        clearInterval(connectionCheckRef.current);
       }
     };
   }, []);

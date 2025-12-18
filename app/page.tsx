@@ -9,6 +9,7 @@ import { GameInfo } from '@/components/GameInfo';
 import { MultiplayerLobby } from '@/components/MultiplayerLobby';
 import { RoomInfo } from '@/components/RoomInfo';
 import { ConnectionStatus } from '@/components/ConnectionStatus';
+import { ConnectionQualityIndicator } from '@/components/ConnectionQualityIndicator';
 import { WinnerModal } from '@/components/WinnerModal';
 import { useMultiplayerSSE } from '@/hooks/useMultiplayerSSE';
 
@@ -212,14 +213,20 @@ export default function Home() {
           winner={gameState.winner}
           onRestart={handleRestart}
           onBackToLobby={gameMode === 'local' ? handleBackToLobby : undefined}
+          currentPlayerNumber={gameMode === 'online' ? playerInfo?.playerNumber : undefined}
         />
       )}
       
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
-          <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
-            🎲 Quarto
-          </h1>
+          <div className="flex items-center gap-4">
+            <h1 className="text-4xl md:text-5xl font-bold text-gray-800">
+              🎲 Quarto
+            </h1>
+            {gameMode === 'online' && (
+              <ConnectionQualityIndicator status={connectionStatus} compact />
+            )}
+          </div>
           {gameMode === 'local' && (
             <button
               onClick={handleBackToLobby}

@@ -66,13 +66,15 @@ export async function GET(request: NextRequest) {
 
   return new Response(stream, {
     headers: {
-      'Content-Type': 'text/event-stream',
-      'Cache-Control': 'no-cache, no-transform',
+      'Content-Type': 'text/event-stream; charset=utf-8',
+      'Cache-Control': 'no-cache, no-store, must-revalidate, no-transform',
       'Connection': 'keep-alive',
-      'X-Accel-Buffering': 'no',
-      'Keep-Alive': 'timeout=300, max=1000', // Lange Timeouts für Inaktivität
-      // Verhindere Buffering durch Proxies/Load Balancer
+      'X-Accel-Buffering': 'no', // Nginx: Verhindere Buffering
+      'Keep-Alive': 'timeout=600, max=10000', // Sehr lange Timeouts
       'X-Content-Type-Options': 'nosniff',
+      // Zusätzliche Headers für bessere Kompatibilität
+      'Transfer-Encoding': 'chunked',
+      'Access-Control-Allow-Origin': '*', // Falls CORS-Probleme auftreten
     },
   });
 }

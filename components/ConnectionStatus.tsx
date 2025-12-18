@@ -24,14 +24,14 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
   if (status === 'error') {
     return (
-      <div className="p-3 bg-red-50 border border-red-200 rounded-lg">
-        <div className="text-red-800">
+      <div className="p-3 bg-orange-50 border border-orange-300 rounded-lg">
+        <div className="text-orange-800">
           <div className="flex items-center gap-2 font-semibold mb-1">
-            <span>❌</span>
-            <span>Verbindung verloren</span>
+            <div className="animate-pulse">⚠️</div>
+            <span>Verbindung instabil</span>
           </div>
           <div className="text-sm">
-            {error || 'Versuche automatisch wiederherzustellen...'}
+            {error || 'Versuche automatisch wiederherzustellen...'} Das Spiel läuft im Fallback-Modus weiter.
           </div>
         </div>
       </div>
