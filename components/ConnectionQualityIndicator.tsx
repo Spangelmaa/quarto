@@ -61,12 +61,12 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1" title={`Verbindung: ${getQualityText(quality)}`}>
-        <div className="flex gap-0.5">
+      <div className="flex items-center gap-2 px-3 py-2 bg-white/30 backdrop-blur-sm rounded-xl border border-white/40 shadow-lg" title={`Verbindung: ${getQualityText(quality)}`}>
+        <div className="flex gap-1">
           {[1, 2, 3, 4].map((bar) => (
             <div
               key={bar}
-              className={`w-1 rounded-sm transition-all ${
+              className={`w-1.5 rounded-full transition-all ${
                 bar === 1 ? 'h-2' : bar === 2 ? 'h-3' : bar === 3 ? 'h-4' : 'h-5'
               } ${
                 (quality === 'excellent' && bar <= 4) ||
@@ -74,7 +74,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
                 (quality === 'fair' && bar <= 2) ||
                 (quality === 'poor' && bar <= 1)
                   ? getQualityColor(quality)
-                  : 'bg-gray-300'
+                  : 'bg-gray-400/50'
               }`}
             />
           ))}
@@ -84,26 +84,26 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
   }
 
   return (
-    <div className="inline-flex items-center gap-2 px-3 py-1.5 bg-white rounded-full shadow-sm border border-gray-200">
-      <span className="text-sm">{getQualityIcon(quality)}</span>
-      <div className="flex gap-0.5">
+    <div className="inline-flex items-center gap-3 px-4 py-2 bg-white/30 backdrop-blur-sm rounded-2xl shadow-lg border border-white/40">
+      <span className="text-lg">{getQualityIcon(quality)}</span>
+      <div className="flex gap-1">
         {[1, 2, 3, 4].map((bar) => (
           <div
             key={bar}
-            className={`w-1.5 rounded-sm transition-all ${
-              bar === 1 ? 'h-2' : bar === 2 ? 'h-3' : bar === 3 ? 'h-4' : 'h-5'
+            className={`w-2 rounded-full transition-all ${
+              bar === 1 ? 'h-3' : bar === 2 ? 'h-4' : bar === 3 ? 'h-5' : 'h-6'
             } ${
               (quality === 'excellent' && bar <= 4) ||
               (quality === 'good' && bar <= 3) ||
               (quality === 'fair' && bar <= 2) ||
               (quality === 'poor' && bar <= 1)
                 ? getQualityColor(quality)
-                : 'bg-gray-300'
+                : 'bg-gray-400/50'
             }`}
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-gray-700">
+      <span className="text-sm font-bold text-gray-800">
         {getQualityText(quality)}
       </span>
     </div>

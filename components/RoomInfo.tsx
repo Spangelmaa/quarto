@@ -21,36 +21,43 @@ export const RoomInfo: React.FC<RoomInfoProps> = ({
   };
 
   return (
-    <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg shadow-md">
-      <div className="flex items-center justify-between mb-3">
+    <div className="mb-8 p-6 bg-gradient-to-r from-blue-500/20 via-purple-500/20 to-pink-500/20 backdrop-blur-sm rounded-2xl shadow-xl border border-blue-400/30">
+      <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-sm text-gray-600">Raumcode:</div>
-          <div className="flex items-center gap-2">
-            <span className="text-2xl font-bold text-blue-600 tracking-wider">
+          <div className="text-sm text-gray-700 font-medium mb-1 flex items-center gap-2">
+            <span className="text-lg">🔑</span>
+            Raumcode:
+          </div>
+          <div className="flex items-center gap-3">
+            <span className="text-3xl font-extrabold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent tracking-wider">
               {playerInfo.roomId}
             </span>
             <button
               onClick={copyRoomId}
-              className="px-3 py-1 bg-blue-600 text-white text-sm rounded hover:bg-blue-700 transition-colors"
+              className="px-4 py-2 bg-gradient-to-r from-blue-600 to-purple-600 text-white text-sm font-bold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all transform hover:scale-105 shadow-md"
             >
-              {copied ? '✓ Kopiert' : 'Kopieren'}
+              {copied ? '✓ Kopiert!' : '📋 Kopieren'}
             </button>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-sm text-gray-600">Du bist:</div>
-          <div className="text-xl font-bold text-purple-600">
+          <div className="text-sm text-gray-700 font-medium mb-1 flex items-center justify-end gap-2">
+            <span className="text-lg">👤</span>
+            Du bist:
+          </div>
+          <div className="text-2xl font-extrabold bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
             Spieler {playerInfo.playerNumber}
           </div>
         </div>
       </div>
 
       {waitingForPlayer && (
-        <div className="mb-3 p-3 bg-yellow-100 border border-yellow-300 rounded text-center">
-          <div className="animate-pulse text-yellow-800 font-semibold">
-            ⏳ Warte auf Spieler 2...
+        <div className="mb-4 p-4 bg-gradient-to-r from-yellow-400/20 to-orange-400/20 backdrop-blur-sm border-2 border-yellow-400/50 rounded-xl text-center shadow-lg">
+          <div className="animate-pulse text-yellow-900 font-bold text-lg flex items-center justify-center gap-2">
+            <span className="text-2xl">⏳</span>
+            Warte auf Spieler 2...
           </div>
-          <div className="text-xs text-yellow-700 mt-1">
+          <div className="text-sm text-yellow-800 mt-2 font-medium">
             Teile den Raumcode mit einem Freund
           </div>
         </div>
@@ -58,9 +65,9 @@ export const RoomInfo: React.FC<RoomInfoProps> = ({
 
       <button
         onClick={onLeaveRoom}
-        className="w-full px-4 py-2 bg-red-500 text-white text-sm font-semibold rounded hover:bg-red-600 transition-colors"
+        className="w-full px-5 py-3 bg-gradient-to-r from-red-500 to-pink-500 text-white font-bold rounded-xl hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg"
       >
-        Raum verlassen
+        🚪 Raum verlassen
       </button>
     </div>
   );
