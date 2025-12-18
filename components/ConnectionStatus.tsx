@@ -13,10 +13,10 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 }) => {
   if (status === 'connecting') {
     return (
-      <div className="p-3 bg-amber-50 border border-amber-200 rounded-lg">
-        <div className="flex items-center gap-2 text-amber-800">
-          <div className="animate-spin">🔄</div>
-          <span className="font-medium">Verbinde mit Server...</span>
+      <div className="p-2.5 bg-slate-50 border border-slate-200 rounded text-sm">
+        <div className="flex items-center gap-2 text-slate-700">
+          <div className="animate-spin">⟳</div>
+          <span>Verbinde mit Server...</span>
         </div>
       </div>
     );
@@ -24,13 +24,13 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
   if (status === 'error') {
     return (
-      <div className="p-3 bg-rose-50 border border-rose-200 rounded-lg">
-        <div className="text-rose-800">
+      <div className="p-2.5 bg-red-50 border border-red-200 rounded text-sm">
+        <div className="text-red-800">
           <div className="flex items-center gap-2 font-semibold mb-1">
-            <span>⚠️</span>
+            <span>⚠</span>
             <span>Verbindung instabil</span>
           </div>
-          <div className="text-sm">
+          <div className="text-xs">
             {error || 'Versuche automatisch wiederherzustellen...'} Das Spiel läuft im Fallback-Modus weiter.
           </div>
         </div>
@@ -40,10 +40,10 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
   if (status === 'connected' && waitingForPlayer) {
     return (
-      <div className="p-3 bg-indigo-50 border border-indigo-200 rounded-lg">
-        <div className="flex items-center gap-2 text-indigo-800">
+      <div className="p-2.5 bg-slate-50 border border-slate-200 rounded text-sm">
+        <div className="flex items-center gap-2 text-slate-700">
           <span>⏳</span>
-          <span className="font-medium">Warte auf zweiten Spieler...</span>
+          <span>Warte auf zweiten Spieler...</span>
         </div>
       </div>
     );
@@ -51,10 +51,10 @@ export const ConnectionStatus: React.FC<ConnectionStatusProps> = ({
 
   if (status === 'connected') {
     return (
-      <div className="p-2 bg-emerald-50 border border-emerald-200 rounded-lg">
-        <div className="flex items-center gap-2 text-emerald-800 text-sm font-medium">
-          <span>✅</span>
-          <span>Echtzeit-Verbindung aktiv</span>
+      <div className="p-2 bg-emerald-50 border border-emerald-200 rounded text-xs">
+        <div className="flex items-center gap-1.5 text-emerald-800 font-medium">
+          <span>✓</span>
+          <span>Verbunden</span>
         </div>
       </div>
     );
