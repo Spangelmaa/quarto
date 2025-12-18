@@ -83,12 +83,12 @@ export default function Home() {
 
       const result = await createRoomAction(playerId);
 
-      if (result.success) {
+      if (result.success && result.data) {
         console.log('✅ Raum erstellt:', result.data.roomId);
         setGameMode('online');
         // Verbinde SSE manuell oder integriere in useMultiplayerSSE
       } else {
-        setError(result.error);
+        setError(result.error || 'Unbekannter Fehler');
       }
     } catch (err) {
       setError('Fehler beim Erstellen des Raums');
