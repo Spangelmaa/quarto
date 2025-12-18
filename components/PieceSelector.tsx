@@ -11,14 +11,18 @@ type PieceSelectorProps = {
 export const PieceSelector: React.FC<PieceSelectorProps> = ({ pieces, onPieceSelect, disabled }) => {
   return (
     <div className="mt-6">
-      <h3 className="text-base sm:text-lg font-semibold mb-3 text-center text-slate-800">
+      <h3 className="text-lg sm:text-xl font-bold mb-3 text-center text-indigo-900">
         Verfügbare Spielsteine
       </h3>
-      <div className="grid grid-cols-4 sm:grid-cols-8 gap-2 sm:gap-3 p-3 sm:p-4 bg-slate-50 rounded border border-slate-200 max-w-4xl mx-auto">
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4 p-5 bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl border border-indigo-100 shadow-inner max-w-4xl mx-auto">
         {pieces.map(piece => (
           <div 
             key={piece.id} 
-            className={disabled ? 'opacity-40 cursor-not-allowed' : 'cursor-pointer'}
+            className={`transition-transform ${
+              disabled 
+                ? 'opacity-40 cursor-not-allowed' 
+                : 'cursor-pointer hover:scale-110'
+            }`}
           >
             <Piece
               piece={piece}

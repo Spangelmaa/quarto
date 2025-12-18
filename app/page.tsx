@@ -189,7 +189,7 @@ export default function Home() {
   // Zeige Lobby
   if (gameMode === 'lobby') {
     return (
-      <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-8 px-4 flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 py-8 px-4 flex items-center justify-center">
         <MultiplayerLobby
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
@@ -206,7 +206,7 @@ export default function Home() {
     (playerInfo !== null && gameState.currentPlayer === playerInfo.playerNumber);
 
   return (
-    <main className="min-h-screen bg-gradient-to-b from-slate-50 to-slate-100 py-8 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 py-8 px-4">
       {/* Gewinner Modal */}
       {gameState.winner !== null && (
         <WinnerModal
@@ -220,7 +220,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-3xl md:text-4xl font-bold text-slate-800">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
               Quarto
             </h1>
             {gameMode === 'online' && (
@@ -230,14 +230,14 @@ export default function Home() {
           {gameMode === 'local' && (
             <button
               onClick={handleBackToLobby}
-              className="px-4 py-2 bg-slate-700 text-white font-medium rounded-md hover:bg-slate-800 transition-colors"
+              className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
             >
               ← Zurück
             </button>
           )}
         </div>
 
-        <div className="bg-white rounded-lg shadow-lg p-6 md:p-8 border border-slate-200">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8 border border-indigo-100">
           {/* Room Info für Online-Spiele */}
           {gameMode === 'online' && playerInfo && (
             <RoomInfo
