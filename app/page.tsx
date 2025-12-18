@@ -260,9 +260,9 @@ export default function Home() {
 
           {/* Zeige Hinweis wenn nicht am Zug */}
           {gameMode === 'online' && !waitingForPlayer && !isMyTurn && gameState.winner === null && (
-            <div className="mb-6 p-3 bg-slate-50 border border-slate-300 rounded text-center">
-              <div className="text-slate-700 font-medium text-sm">
-                Warte auf Spieler {gameState.currentPlayer}...
+            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-center shadow-sm">
+              <div className="text-indigo-800 font-semibold text-base">
+                ⏳ Warte auf Spieler {gameState.currentPlayer}...
               </div>
             </div>
           )}
@@ -293,14 +293,32 @@ export default function Home() {
             }
           />
 
-          <div className="mt-8 p-4 bg-slate-50 rounded border border-slate-200">
-            <h3 className="font-semibold mb-2 text-slate-800 text-sm">Spielregeln</h3>
-            <ul className="list-disc list-inside space-y-1 text-xs text-slate-600">
-              <li>Jeder Spielstein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</li>
-              <li>Spieler 1 wählt einen Stein, den Spieler 2 platzieren muss</li>
-              <li>Dann wählt Spieler 2 einen Stein für Spieler 1</li>
-              <li>Gewinner: Wer als Erster 4 Steine mit einer gemeinsamen Eigenschaft in einer Reihe hat</li>
-              <li>Dies kann horizontal, vertikal oder diagonal sein</li>
+          <div className="mt-8 p-5 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-sm">
+            <h3 className="font-bold mb-3 text-amber-900 flex items-center gap-2">
+              <span className="text-lg">📖</span>
+              <span>Spielregeln</span>
+            </h3>
+            <ul className="space-y-2 text-sm text-amber-900">
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 font-bold mt-0.5">•</span>
+                <span>Jeder Spielstein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 font-bold mt-0.5">•</span>
+                <span>Spieler 1 wählt einen Stein, den Spieler 2 platzieren muss</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 font-bold mt-0.5">•</span>
+                <span>Dann wählt Spieler 2 einen Stein für Spieler 1</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 font-bold mt-0.5">•</span>
+                <span>Gewinner: Wer als Erster 4 Steine mit einer gemeinsamen Eigenschaft in einer Reihe hat</span>
+              </li>
+              <li className="flex items-start gap-2">
+                <span className="text-amber-600 font-bold mt-0.5">•</span>
+                <span>Dies kann horizontal, vertikal oder diagonal sein</span>
+              </li>
             </ul>
           </div>
         </div>

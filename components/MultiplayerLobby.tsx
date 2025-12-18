@@ -98,12 +98,24 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
       </div>
 
       {/* Spielregeln */}
-      <div className="mt-6 p-3 bg-slate-50 rounded border border-slate-200">
-        <h3 className="font-semibold mb-2 text-xs text-slate-700">Spielregeln</h3>
-        <ul className="list-disc list-inside space-y-0.5 text-xs text-slate-600">
-          <li>Jeder Stein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</li>
-          <li>Spieler wählen abwechselnd Steine für den Gegner</li>
-          <li>Gewinner: 4 Steine mit gemeinsamer Eigenschaft in einer Reihe</li>
+      <div className="mt-6 p-4 bg-gradient-to-br from-amber-50 to-orange-50 rounded-xl border border-amber-200 shadow-sm">
+        <h3 className="font-bold mb-2 text-sm text-amber-900 flex items-center gap-1">
+          <span>📖</span>
+          <span>Spielregeln</span>
+        </h3>
+        <ul className="space-y-1.5 text-xs text-amber-800">
+          <li className="flex items-start gap-2">
+            <span className="text-amber-600 font-bold">•</span>
+            <span>Jeder Stein hat 4 Eigenschaften: Farbe, Höhe, Form, Oberseite</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-amber-600 font-bold">•</span>
+            <span>Spieler wählen abwechselnd Steine für den Gegner</span>
+          </li>
+          <li className="flex items-start gap-2">
+            <span className="text-amber-600 font-bold">•</span>
+            <span>Gewinner: 4 Steine mit gemeinsamer Eigenschaft in einer Reihe</span>
+          </li>
         </ul>
       </div>
     </div>
