@@ -25,13 +25,13 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, onRestart }) => {
   
   return (
     <div className="mb-6 text-center">
-      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-indigo-900">
+      <h2 className="text-xl sm:text-2xl font-bold mb-4 text-emerald-900">
         {getStatusMessage()}
       </h2>
       
       {gameState.selectedPiece && (
-        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4 p-4 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 shadow-sm">
-          <span className="font-semibold text-base text-indigo-900">
+        <div className="flex flex-col sm:flex-row items-center justify-center gap-3 mb-4 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 shadow-sm">
+          <span className="font-semibold text-base text-emerald-900">
             Ausgewählter Stein:
           </span>
           <Piece piece={gameState.selectedPiece} size="medium" selected={true} />
@@ -41,7 +41,7 @@ export const GameInfo: React.FC<GameInfoProps> = ({ gameState, onRestart }) => {
       {gameState.winner !== null && (
         <button
           onClick={onRestart}
-          className="mt-4 px-6 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md"
+          className="mt-4 px-6 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-md"
         >
           Neues Spiel
         </button>

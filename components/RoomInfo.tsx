@@ -21,29 +21,29 @@ export const RoomInfo: React.FC<RoomInfoProps> = ({
   };
 
   return (
-    <div className="mb-6 p-5 bg-gradient-to-r from-indigo-50 to-purple-50 rounded-xl border border-indigo-200 shadow-sm">
+    <div className="mb-6 p-5 bg-gradient-to-r from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 shadow-sm">
       <div className="flex items-center justify-between mb-4">
         <div>
-          <div className="text-xs text-indigo-600 mb-1 font-semibold uppercase tracking-wide">
+          <div className="text-xs text-emerald-700 mb-1 font-semibold uppercase tracking-wide">
             Raumcode
           </div>
           <div className="flex items-center gap-3">
-            <span className="text-2xl font-bold text-indigo-900 tracking-wider">
+            <span className="text-2xl font-bold text-emerald-900 tracking-wider">
               {playerInfo.roomId}
             </span>
             <button
               onClick={copyRoomId}
-              className="px-3 py-1.5 bg-indigo-600 text-white text-xs font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-sm"
+              className="px-3 py-1.5 bg-emerald-600 text-white text-xs font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-sm"
             >
               {copied ? '✓ Kopiert' : 'Kopieren'}
             </button>
           </div>
         </div>
         <div className="text-right">
-          <div className="text-xs text-purple-600 mb-1 font-semibold uppercase tracking-wide">
+          <div className="text-xs text-teal-700 mb-1 font-semibold uppercase tracking-wide">
             Du bist
           </div>
-          <div className="text-xl font-bold text-purple-900">
+          <div className="text-xl font-bold text-teal-900">
             Spieler {playerInfo.playerNumber}
           </div>
         </div>

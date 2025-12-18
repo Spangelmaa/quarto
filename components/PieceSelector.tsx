@@ -11,10 +11,10 @@ type PieceSelectorProps = {
 export const PieceSelector: React.FC<PieceSelectorProps> = ({ pieces, onPieceSelect, disabled }) => {
   return (
     <div className="mt-6">
-      <h3 className="text-lg sm:text-xl font-bold mb-3 text-center text-indigo-900">
+      <h3 className="text-lg sm:text-xl font-bold mb-3 text-center text-emerald-900">
         Verfügbare Spielsteine
       </h3>
-      <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4 p-5 bg-gradient-to-br from-slate-50 to-indigo-50 rounded-xl border border-indigo-100 shadow-inner max-w-4xl mx-auto">
+      <div className="grid grid-cols-4 sm:grid-cols-8 gap-3 sm:gap-4 p-5 bg-gradient-to-br from-emerald-50 to-teal-50 rounded-xl border border-emerald-200 shadow-inner max-w-4xl mx-auto">
         {pieces.map(piece => (
           <div 
             key={piece.id} 

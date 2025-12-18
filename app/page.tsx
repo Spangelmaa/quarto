@@ -189,7 +189,7 @@ export default function Home() {
   // Zeige Lobby
   if (gameMode === 'lobby') {
     return (
-      <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 py-8 px-4 flex items-center justify-center">
+      <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 py-8 px-4 flex items-center justify-center">
         <MultiplayerLobby
           onCreateRoom={handleCreateRoom}
           onJoinRoom={handleJoinRoom}
@@ -206,7 +206,7 @@ export default function Home() {
     (playerInfo !== null && gameState.currentPlayer === playerInfo.playerNumber);
 
   return (
-    <main className="min-h-screen bg-gradient-to-br from-indigo-50 via-blue-50 to-purple-50 py-8 px-4">
+    <main className="min-h-screen bg-gradient-to-br from-emerald-50 via-green-50 to-teal-50 py-8 px-4">
       {/* Gewinner Modal */}
       {gameState.winner !== null && (
         <WinnerModal
@@ -220,7 +220,7 @@ export default function Home() {
       <div className="max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div className="flex items-center gap-4">
-            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+            <h1 className="text-4xl md:text-5xl font-bold bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
               Quarto
             </h1>
             {gameMode === 'online' && (
@@ -230,14 +230,14 @@ export default function Home() {
           {gameMode === 'local' && (
             <button
               onClick={handleBackToLobby}
-              className="px-5 py-2 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-colors shadow-md"
+              className="px-5 py-2 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-colors shadow-md"
             >
               ← Zurück
             </button>
           )}
         </div>
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8 border border-indigo-100">
+        <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 md:p-8 border border-emerald-100">
           {/* Room Info für Online-Spiele */}
           {gameMode === 'online' && playerInfo && (
             <RoomInfo
@@ -260,8 +260,8 @@ export default function Home() {
 
           {/* Zeige Hinweis wenn nicht am Zug */}
           {gameMode === 'online' && !waitingForPlayer && !isMyTurn && gameState.winner === null && (
-            <div className="mb-6 p-4 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-xl text-center shadow-sm">
-              <div className="text-indigo-800 font-semibold text-base">
+            <div className="mb-6 p-4 bg-gradient-to-r from-emerald-50 to-teal-50 border border-emerald-200 rounded-xl text-center shadow-sm">
+              <div className="text-emerald-800 font-semibold text-base">
                 ⏳ Warte auf Spieler {gameState.currentPlayer}...
               </div>
             </div>

@@ -24,8 +24,8 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
   };
 
   return (
-    <div className="max-w-md mx-auto p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-indigo-200">
-      <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+    <div className="max-w-md mx-auto p-8 bg-white/95 backdrop-blur-sm rounded-2xl shadow-2xl border border-emerald-200">
+      <h2 className="text-3xl font-bold text-center mb-8 bg-gradient-to-r from-emerald-700 to-green-600 bg-clip-text text-transparent">
         Quarto
       </h2>
 
@@ -43,24 +43,24 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
 
       <div className="space-y-4">
         {/* Spiel erstellen */}
-        <div className="p-5 bg-gradient-to-br from-indigo-50 to-blue-50 rounded-xl border border-indigo-200">
-          <h3 className="font-bold text-lg mb-2 text-indigo-900">🎮 Neues Spiel erstellen</h3>
-          <p className="text-sm text-indigo-700 mb-3">
+        <div className="p-5 bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl border border-emerald-200">
+          <h3 className="font-bold text-lg mb-2 text-emerald-900">🎮 Neues Spiel erstellen</h3>
+          <p className="text-sm text-emerald-700 mb-3">
             Erstelle einen Raum und teile den Code mit einem Freund
           </p>
           <button
             onClick={onCreateRoom}
             disabled={isCreating}
-            className="w-full px-5 py-3 bg-indigo-600 text-white font-semibold rounded-lg hover:bg-indigo-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+            className="w-full px-5 py-3 bg-emerald-600 text-white font-semibold rounded-lg hover:bg-emerald-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {isCreating ? 'Erstelle Raum...' : 'Raum erstellen'}
           </button>
         </div>
 
         {/* Spiel beitreten */}
-        <div className="p-5 bg-gradient-to-br from-purple-50 to-pink-50 rounded-xl border border-purple-200">
-          <h3 className="font-bold text-lg mb-2 text-purple-900">🔗 Einem Spiel beitreten</h3>
-          <p className="text-sm text-purple-700 mb-3">
+        <div className="p-5 bg-gradient-to-br from-teal-50 to-cyan-50 rounded-xl border border-teal-200">
+          <h3 className="font-bold text-lg mb-2 text-teal-900">🔗 Einem Spiel beitreten</h3>
+          <p className="text-sm text-teal-700 mb-3">
             Gib den 4-stelligen Raumcode ein
           </p>
           <div className="flex flex-col gap-2">
@@ -70,12 +70,12 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
               onChange={(e) => setRoomId(e.target.value.toUpperCase())}
               placeholder="ABCD"
               maxLength={4}
-              className="w-full px-4 py-3 border-2 border-purple-300 rounded-lg focus:outline-none focus:border-purple-500 focus:ring-2 focus:ring-purple-200 uppercase text-center text-xl font-bold text-purple-900"
+              className="w-full px-4 py-3 border-2 border-teal-300 rounded-lg focus:outline-none focus:border-teal-500 focus:ring-2 focus:ring-teal-200 uppercase text-center text-xl font-bold text-teal-900"
             />
             <button
               onClick={handleJoinRoom}
               disabled={roomId.length !== 4}
-              className="w-full px-5 py-3 bg-purple-600 text-white font-semibold rounded-lg hover:bg-purple-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
+              className="w-full px-5 py-3 bg-teal-600 text-white font-semibold rounded-lg hover:bg-teal-700 transition-all shadow-md disabled:opacity-50 disabled:cursor-not-allowed"
             >
               Beitreten
             </button>
@@ -83,14 +83,14 @@ export const MultiplayerLobby: React.FC<MultiplayerLobbyProps> = ({
         </div>
 
         {/* Lokal spielen */}
-        <div className="p-5 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-xl border border-blue-200">
-          <h3 className="font-bold text-lg mb-2 text-blue-900">🏠 Lokal spielen</h3>
-          <p className="text-sm text-blue-700 mb-3">
+        <div className="p-5 bg-gradient-to-br from-green-50 to-emerald-50 rounded-xl border border-green-200">
+          <h3 className="font-bold text-lg mb-2 text-green-900">🏠 Lokal spielen</h3>
+          <p className="text-sm text-green-700 mb-3">
             Spiele zu zweit auf diesem Gerät
           </p>
           <button
             onClick={onPlayLocal}
-            className="w-full px-5 py-3 bg-blue-600 text-white font-semibold rounded-lg hover:bg-blue-700 transition-all shadow-md"
+            className="w-full px-5 py-3 bg-green-600 text-white font-semibold rounded-lg hover:bg-green-700 transition-all shadow-md"
           >
             Lokal spielen
           </button>

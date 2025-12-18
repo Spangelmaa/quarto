@@ -61,7 +61,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
 
   if (compact) {
     return (
-      <div className="flex items-center gap-1 px-2 py-1 bg-white rounded border border-slate-200" title={`Verbindung: ${getQualityText(quality)}`}>
+      <div className="flex items-center gap-1 px-2 py-1 bg-white rounded-lg border border-emerald-200 shadow-sm" title={`Verbindung: ${getQualityText(quality)}`}>
         <div className="flex gap-0.5">
           {[1, 2, 3, 4].map((bar) => (
             <div
@@ -84,7 +84,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
   }
 
   return (
-    <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white rounded border border-slate-200">
+    <div className="inline-flex items-center gap-2 px-2.5 py-1 bg-white rounded-lg border border-emerald-200 shadow-sm">
       <span className="text-xs">{getQualityIcon(quality)}</span>
       <div className="flex gap-0.5">
         {[1, 2, 3, 4].map((bar) => (
@@ -103,7 +103,7 @@ export const ConnectionQualityIndicator: React.FC<ConnectionQualityIndicatorProp
           />
         ))}
       </div>
-      <span className="text-xs font-medium text-slate-700">
+      <span className="text-xs font-medium text-emerald-900">
         {getQualityText(quality)}
       </span>
     </div>
